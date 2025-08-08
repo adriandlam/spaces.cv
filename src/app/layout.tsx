@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Home, Search, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
+import Nav from "@/components/nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +38,31 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          forcedTheme="dark"
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            <div className="flex">
+              <Nav />
+              <div className="flex-1 px-6 py-4 flex flex-col gap-4">
+                <header className="flex justify-center items-center">
+                  <ul className="flex gap-6 text-sm ml-auto">
+                    <li className="opacity-70 hover:opacity-100 transition-opacity">
+                      <Link href="/">About</Link>
+                    </li>
+                    <li className="opacity-70 hover:opacity-100 transition-opacity">
+                      <Link href="/">Features</Link>
+                    </li>
+                  </ul>
+                  <Button className="ml-auto">Get Started</Button>
+                </header>
+                {children}
+              </div>
+            </div>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
