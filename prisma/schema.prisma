@@ -39,6 +39,8 @@ model User {
   educations      Education[]
   workExperiences WorkExperience[]
 
+  sectionOrder String[] @default(["experience", "education", "projects"])
+
   @@unique([email])
   @@unique([username])
   @@map("user")
@@ -55,7 +57,7 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
+  @@unique([token, userId])
   @@map("session")
 }
 
@@ -75,6 +77,7 @@ model Account {
   createdAt             DateTime
   updatedAt             DateTime
 
+  @@unique([userId])
   @@map("account")
 }
 
@@ -86,6 +89,7 @@ model Verification {
   createdAt  DateTime?
   updatedAt  DateTime?
 
+  @@unique([identifier])
   @@map("verification")
 }
 

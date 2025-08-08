@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const profileFormSchema = z.object({
+export const profileSchema = z.object({
   name: z
     .string()
     .min(1, "Display name is required")
@@ -18,7 +18,7 @@ export const profileFormSchema = z.object({
     .regex(/^[a-zA-Z]/, "Username must start with a letter"),
 });
 
-export const projectFormSchema = z.object({
+export const projectSchema = z.object({
   title: z
     .string()
     .min(1, "Project title is required")
@@ -50,7 +50,7 @@ export const projectFormSchema = z.object({
     .or(z.literal("")),
 });
 
-export const generalFormSchema = z.object({
+export const generalSchema = z.object({
   name: z
     .string()
     .min(1, "Display name is required")
@@ -90,7 +90,7 @@ export const generalFormSchema = z.object({
     .or(z.literal("")),
 });
 
-export const educationFormSchema = z.object({
+export const educationSchema = z.object({
   from: z
     .string()
     .min(1, "Start date is required")
@@ -150,3 +150,9 @@ export const educationFormSchema = z.object({
     .optional()
     .or(z.literal("")),
 });
+
+// Export Form schemas as aliases for compatibility
+export const profileFormSchema = profileSchema;
+export const projectFormSchema = projectSchema;
+export const generalFormSchema = generalSchema;
+export const educationFormSchema = educationSchema;

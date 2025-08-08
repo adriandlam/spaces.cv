@@ -1,5 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
+
+const usernameSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3, "Username must be at least 3 characters")
+    .max(32, "Username must be no more than 32 characters")
+    .regex(/^[a-zA-Z0-9._-]+$/, "Username contains invalid characters"),
+});
 
 export async function POST(req: Request) {
   try {
@@ -12,30 +23,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate username format
-    const usernameRegex = /^[a-zA-Z0-9._-]+$/;
-    if (!usernameRegex.test(username)) {
+    const validation = usernameSchema.safeParse({ username });
+    if (!validation.success) {
       return NextResponse.json(
-        { available: false, error: "Username contains invalid characters" },
-        { status: 200 }
-      );
-    }
-
-    // Check length constraints
-    if (username.length < 3) {
-      return NextResponse.json(
-        { available: false, error: "Username must be at least 3 characters" },
-        { status: 200 }
-      );
-    }
-
-    if (username.length > 32) {
-      return NextResponse.json(
-        {
-          available: false,
-          error: "Username must be no more than 32 characters",
-        },
-        { status: 200 }
+        { error: validation.error.issues },
+        { status: 400 }
       );
     }
 

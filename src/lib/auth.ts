@@ -31,6 +31,12 @@ export const auth = betterAuth({
       },
     }),
   ],
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   user: {
     additionalFields: {
       onboarded: {
@@ -53,6 +59,46 @@ export const auth = betterAuth({
           }
           return true;
         },
+      },
+      title: {
+        type: "string",
+        defaultValue: null,
+        input: true,
+      },
+      location: {
+        type: "string",
+        defaultValue: null,
+        input: true,
+      },
+      about: {
+        type: "string",
+        defaultValue: null,
+        input: true,
+      },
+      website: {
+        type: "string",
+        defaultValue: null,
+        input: true,
+      },
+      projects: {
+        type: "string[]",
+        defaultValue: [],
+        input: true,
+      },
+      educations: {
+        type: "string[]",
+        defaultValue: [],
+        input: true,
+      },
+      workExperiences: {
+        type: "string[]",
+        defaultValue: [],
+        input: true,
+      },
+      sectionOrder: {
+        type: "string[]",
+        defaultValue: ["experience", "education", "projects"],
+        input: true,
       },
     },
   },
