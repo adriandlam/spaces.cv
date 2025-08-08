@@ -24,8 +24,23 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  username      String?
+  onboarded     Boolean   @default(false)
+  onboardedAt   DateTime?
+
+  // Profile fields
+  title    String? // What do you do?
+  about    String? // About section
+  location String? // Location
+  website  String? // Website URL
+
+  // Relations
+  projects        Project[]
+  educations      Education[]
+  workExperiences WorkExperience[]
 
   @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 
@@ -72,4 +87,64 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  year          String
+  description   String
+  company       String?
+  link          String?
+  collaborators String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("project")
+}
+
+model Education {
+  id           String   @id @default(cuid())
+  from         String
+  to           String
+  degree       String
+  institution  String
+  location     String?
+  url          String?
+  description  String?
+  classmates   String?
+  fieldOfStudy String?
+  gpa          String?
+  activities   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("education")
+}
+
+model WorkExperience {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  from        String
+  to          String? // Can be null for current job
+  location    String?
+  description String?
+  skills      String? // Comma-separated skills
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("work_experience")
 }

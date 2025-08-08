@@ -28,9 +28,8 @@ import { GitHubIcon, GoogleIcon } from "./provider-icons";
 
 const emailFormSchema = z.object({
   email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+    .email("Please enter a valid email address")
+    .min(1, "Email is required"),
 });
 
 type EmailFormData = z.infer<typeof emailFormSchema>;
@@ -116,7 +115,7 @@ export default function AuthDialog({
           {step === 0 && (
             <motion.div
               key="auth-options"
-              initial={{ x: "-125%" }}
+              initial={{ x: step !== 0 ? "-125%" : 0 }}
               animate={{ x: 0 }}
               exit={{ x: "-125%" }}
               transition={{
@@ -193,7 +192,15 @@ export default function AuthDialog({
                 </p>
               </DialogHeader>
               <Form {...form}>
-                <form className="my-4" onSubmit={handleSubmit(onSubmit)}>
+                <form
+                  className="my-4"
+                  onSubmit={handleSubmit(onSubmit)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (!isValid || isSubmitting)) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
                   <FormField
                     control={form.control}
                     name="email"
@@ -208,6 +215,15 @@ export default function AuthDialog({
                               className={
                                 fieldState.error ? "border-red-500" : ""
                               }
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "Enter" &&
+                                  (!isValid || isSubmitting)
+                                ) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }
+                              }}
                             />
                             <AnimatePresence>
                               {fieldState.error &&
@@ -222,7 +238,7 @@ export default function AuthDialog({
                                       ease: "easeOut",
                                     }}
                                   >
-                                    <CircleX className="text-rose-400 absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
+                                    <CircleX className="text-destructive absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
                                   </motion.span>
                                 )}
                               {emailValue.trim().length > 0 &&
@@ -260,12 +276,14 @@ export default function AuthDialog({
                   <DialogFooter className="flex gap-4 absolute right-0 -bottom-1">
                     <Button
                       variant="link"
+                      type="button"
                       onClick={() => {
                         setStep(0);
                         reset();
                         setSubmitError(null);
                       }}
                       disabled={isSubmitting}
+                      tabIndex={-1}
                     >
                       Back
                     </Button>
@@ -318,7 +336,8 @@ export default function AuthDialog({
                   <Button
                     size="sm"
                     onClick={() => {
-                      resetForm();
+                      setSubmitError(null);
+                      setIsSubmitting(false);
                       setAuthDialogOpen(false);
                     }}
                     variant="secondary"
