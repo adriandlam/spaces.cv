@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,20 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useSession } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useEffect, useState, useCallback } from "react";
-import { Label } from "@/components/ui/label";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  CircleX,
-  CircleCheck,
-  Loader,
-  GripHorizontal,
-  Camera,
-  Plus,
-} from "lucide-react";
 import {
   Form,
   FormControl,
@@ -29,169 +16,37 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-
-const profileFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Display name is required")
-    .min(2, "Display name must be at least 2 characters")
-    .max(50, "Display name must be less than 50 characters"),
-  username: z
-    .string()
-    .min(1, "Username is required")
-    .min(3, "Username must be at least 3 characters")
-    .max(32, "Username must be less than 32 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores"
-    )
-    .regex(/^[a-zA-Z]/, "Username must start with a letter"),
-});
-
-const projectFormSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Project title is required")
-    .max(100, "Title must be less than 100 characters"),
-  year: z
-    .string()
-    .min(1, "Year is required")
-    .regex(/^\d{4}$/, "Please enter a valid 4-digit year"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(500, "Description must be less than 500 characters"),
-  company: z
-    .string()
-    .max(100, "Company name must be less than 100 characters")
-    .optional()
-    .or(z.literal("")),
-  link: z
-    .string()
-    .refine((val) => val === "" || /^https?:\/\//.test(val), {
-      message: "Please enter a valid URL starting with http:// or https://",
-    })
-    .optional()
-    .or(z.literal("")),
-  collaborators: z
-    .string()
-    .max(200, "Collaborators must be less than 200 characters")
-    .optional()
-    .or(z.literal("")),
-});
-
-const generalFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Display name is required")
-    .min(2, "Display name must be at least 2 characters")
-    .max(50, "Display name must be less than 50 characters"),
-  username: z
-    .string()
-    .min(1, "Username is required")
-    .min(3, "Username must be at least 3 characters")
-    .max(32, "Username must be less than 32 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores"
-    )
-    .regex(/^[a-zA-Z]/, "Username must start with a letter"),
-  title: z
-    .string()
-    .max(100, "Title must be less than 100 characters")
-    .optional()
-    .or(z.literal("")),
-  about: z
-    .string()
-    .max(500, "About section must be less than 500 characters")
-    .optional()
-    .or(z.literal("")),
-  location: z
-    .string()
-    .max(100, "Location must be less than 100 characters")
-    .optional()
-    .or(z.literal("")),
-  website: z
-    .string()
-    .refine((val) => val === "" || /^https?:\/\//.test(val), {
-      message: "Please enter a valid URL starting with http:// or https://",
-    })
-    .optional()
-    .or(z.literal("")),
-});
-
-const educationFormSchema = z.object({
-  from: z
-    .string()
-    .min(1, "Start date is required")
-    .regex(/^\d{4}$/, "Please enter a valid 4-digit year"),
-  to: z
-    .string()
-    .min(1, "End date is required")
-    .regex(
-      /^(\d{4}|Present)$/,
-      "Please enter a valid 4-digit year or 'Present'"
-    ),
-  degree: z
-    .string()
-    .min(1, "Degree/Certification is required")
-    .max(100, "Degree must be less than 100 characters"),
-  institution: z
-    .string()
-    .min(1, "Institution is required")
-    .max(100, "Institution name must be less than 100 characters"),
-  location: z
-    .string()
-    .max(100, "Location must be less than 100 characters")
-    .optional()
-    .or(z.literal("")),
-  url: z
-    .string()
-    .refine((val) => val === "" || /^https?:\/\//.test(val), {
-      message: "Please enter a valid URL starting with http:// or https://",
-    })
-    .optional()
-    .or(z.literal("")),
-  description: z
-    .string()
-    .max(500, "Description must be less than 500 characters")
-    .optional()
-    .or(z.literal("")),
-  classmates: z
-    .string()
-    .max(200, "Classmates must be less than 200 characters")
-    .optional()
-    .or(z.literal("")),
-  fieldOfStudy: z
-    .string()
-    .max(100, "Field of study must be less than 100 characters")
-    .optional()
-    .or(z.literal("")),
-  gpa: z
-    .string()
-    .refine((val) => val === "" || /^\d{1}(\.\d{1,2})?$/.test(val), {
-      message: "Please enter a valid GPA (e.g., 3.8)",
-    })
-    .optional()
-    .or(z.literal("")),
-  activities: z
-    .string()
-    .max(200, "Activities must be less than 200 characters")
-    .optional()
-    .or(z.literal("")),
-});
-
-type ProfileFormData = z.infer<typeof profileFormSchema>;
-type GeneralFormData = z.infer<typeof generalFormSchema>;
-type ProjectFormData = z.infer<typeof projectFormSchema>;
-type EducationFormData = z.infer<typeof educationFormSchema>;
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Camera,
+  CircleCheck,
+  CircleX,
+  GripHorizontal,
+  Loader,
+  Plus,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  EducationFormData,
+  GeneralFormData,
+  ProfileFormData,
+  ProjectFormData,
+} from "@/types/profile";
+import {
+  educationFormSchema,
+  generalFormSchema,
+  profileFormSchema,
+  projectFormSchema,
+} from "@/lib/validations/profile";
 
 const profileTabs = [
   { id: "general", label: "General" },
