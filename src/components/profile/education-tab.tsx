@@ -77,7 +77,7 @@ export function EducationTab({
 	};
 
 	return (
-		<div className="space-y-7">
+		<div className="space-y-6">
 			<div className="flex justify-between items-center mb-1">
 				<h3 className="text-xl">Education</h3>
 				<Button

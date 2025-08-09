@@ -169,7 +169,7 @@ export default function ProfileModal() {
 			});
 
 			setStep(1); // Push to next step
-		} catch (error) {
+		} catch (_) {
 			setSubmitError("An unexpected error occurred. Please try again.");
 		} finally {
 			setIsSubmitting(false);
@@ -301,7 +301,6 @@ export default function ProfileModal() {
 	};
 
 	const resetForm = () => {
-		setStep(0);
 		setSubmitError(null);
 		setIsSubmitting(false);
 		setShowProjectForm(false);
