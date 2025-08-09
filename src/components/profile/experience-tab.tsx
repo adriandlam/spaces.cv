@@ -1,24 +1,24 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
 
 interface ExperienceTabProps {
-  onAddExperience?: () => void;
+	onAddExperience?: () => void;
 }
 
 export function ExperienceTab({ onAddExperience }: ExperienceTabProps) {
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-1">
-        <h3 className="text-xl">Work Experience</h3>
-        <Button variant="ghost" size="sm" onClick={onAddExperience}>
-          <Plus />
-          Add Experience
-        </Button>
-      </div>
-      <Separator />
-    </div>
-  );
+	return (
+		<div>
+			<div className="flex justify-between items-center mb-1">
+				<h3 className="text-xl">Work Experience</h3>
+				<Button variant="ghost" size="sm" onClick={onAddExperience}>
+					<Plus />
+					Add Experience
+				</Button>
+			</div>
+			<Separator />
+		</div>
+	);
 }

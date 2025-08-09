@@ -1,17 +1,17 @@
 "use client";
 
-import * as React from "react";
-import { SortableTab } from "@/components/sortable-tab";
-import { Label } from "@/components/ui/label";
-import { closestCenter, DragEndEvent, DndContext } from "@dnd-kit/core";
+import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Info } from "lucide-react";
+import * as React from "react";
+import { SortableTab } from "@/components/sortable-tab";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "../ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const defaultProfileTabs = [
 	{ id: "general", label: "General" },

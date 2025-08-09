@@ -1,5 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import { Camera, CircleCheck, CircleX } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Form,
@@ -11,14 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UsernameField } from "./username-field";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion } from "framer-motion";
-import { Camera, CircleCheck, CircleX } from "lucide-react";
-import { useForm } from "react-hook-form";
-import type { GeneralFormData } from "@/types/profile";
 import { generalSchema } from "@/lib/validations/profile";
-import { useEffect } from "react";
+import type { GeneralFormData } from "@/types/profile";
+import { UsernameField } from "./username-field";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;

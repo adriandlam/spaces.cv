@@ -1,5 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import { EyeOff, Pencil, Plus, Trash } from "lucide-react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -15,11 +20,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { educationSchema } from "@/lib/validations/profile";
 import type { EducationFormData } from "@/types/profile";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion } from "framer-motion";
-import { EyeOff, Pencil, Plus, Trash } from "lucide-react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface Education {

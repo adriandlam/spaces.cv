@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Home, Search, User } from "lucide-react";
+import Link from "next/link";
+import Nav from "@/components/nav";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -10,8 +12,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Link from "next/link";
-import Nav from "@/components/nav";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",

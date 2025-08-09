@@ -1,10 +1,10 @@
-import {
-  educationFormSchema,
-  generalFormSchema,
-  profileFormSchema,
-  projectFormSchema,
+import type { z } from "zod";
+import type {
+	educationFormSchema,
+	generalFormSchema,
+	profileFormSchema,
+	projectFormSchema,
 } from "@/lib/validations/profile";
-import { z } from "zod";
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>;
 export type GeneralFormData = z.infer<typeof generalFormSchema>;

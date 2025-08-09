@@ -1,13 +1,13 @@
 "use client";
 
 import { Home, Search, User } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
-import AuthDialog from "./auth-dialog";
 import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import AuthDialog from "./auth-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const navItems = [
 	{
