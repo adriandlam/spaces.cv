@@ -11,18 +11,6 @@ const sectionOrderSchema = z.object({
 
 export async function PUT(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "PUT",
-      path: "/api/profile/section-order",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Section order update request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -81,24 +69,12 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        sectionOrder,
-        duration,
-      },
-      "Section order updated successfully"
-    );
-
     return NextResponse.json({
       success: true,
       message: "Section order updated successfully",
       sectionOrder,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -110,7 +86,6 @@ export async function PUT(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Section order update failed"
     );
@@ -124,18 +99,6 @@ export async function PUT(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "GET",
-      path: "/api/profile/section-order",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Section order fetch request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -161,28 +124,17 @@ export async function GET(req: NextRequest) {
 
     if (!user) {
       logger.warn({ requestId, userId: session.user.id }, "User not found");
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        sectionOrderLength: user.sectionOrder?.length || 0,
-        duration,
-      },
-      "Section order fetched successfully"
-    );
-
     return NextResponse.json({
-      sectionOrder: user.sectionOrder || ["experience", "education", "projects"],
+      sectionOrder: user.sectionOrder || [
+        "experience",
+        "education",
+        "projects",
+      ],
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -194,7 +146,6 @@ export async function GET(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Section order fetch failed"
     );

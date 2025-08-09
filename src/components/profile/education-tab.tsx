@@ -1,8 +1,9 @@
 "use client";
 
+import { ExternalArrow } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { EyeOff, Pencil, Plus, Trash } from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -17,26 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { educationSchema } from "@/lib/validations/profile";
 import type { EducationFormData } from "@/types/profile";
 import { ScrollArea } from "../ui/scroll-area";
-
-interface Education {
-	id: string;
-	from: string;
-	to: string;
-	degree: string;
-	institution: string;
-	location?: string;
-	url?: string;
-	description?: string;
-	classmates?: string;
-	fieldOfStudy?: string;
-	gpa?: string;
-	activities?: string;
-	createdAt: Date;
-}
+import type { Education } from "@/app/generated/prisma";
+import { useProfile } from "@/hooks/use-profile";
+import { cn } from "@/lib/utils";
 
 interface EducationTabProps {
 	educations: Education[];
@@ -46,13 +33,14 @@ interface EducationTabProps {
 	isSubmitting: boolean;
 }
 
-export function EducationTab({
+export default function EducationTab({
 	educations,
 	showEducationForm,
 	onShowEducationForm,
 	onSubmit,
 	isSubmitting,
 }: EducationTabProps) {
+	const { mutateEducation } = useProfile();
 	const educationForm = useForm<EducationFormData>({
 		resolver: zodResolver(educationSchema),
 		mode: "onChange",
@@ -76,6 +64,68 @@ export function EducationTab({
 		educationForm.reset();
 	};
 
+	const hideEducation = async (id: string) => {
+		const education = educations.find((e) => e.id === id);
+		if (!education) return;
+
+		try {
+			// Optimistic update without revalidation
+			mutateEducation(
+				{
+					educations: educations.map((e) =>
+						e.id === id ? { ...e, hidden: !e.hidden } : e,
+					),
+				},
+				false,
+			);
+
+			const response = await fetch("/api/profile/education", {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					id,
+					hidden: !education.hidden,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update education visibility");
+			}
+		} catch (_) {
+			// Revert on error and revalidate
+			mutateEducation();
+		}
+	};
+
+	const deleteEducation = async (id: string) => {
+		try {
+			// Optimistic update - remove education immediately
+			mutateEducation(
+				{
+					educations: educations.filter((e) => e.id !== id),
+				},
+				false,
+			);
+
+			const response = await fetch("/api/profile/education", {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ id }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete education");
+			}
+		} catch (_) {
+			// Revert on error and revalidate
+			mutateEducation();
+		}
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="flex justify-between items-center mb-1">
@@ -97,65 +147,94 @@ export function EducationTab({
 				{educations.length > 0 && (
 					<div className="space-y-3">
 						{educations.map((education) => (
-							<div key={education.id} className="grid grid-cols-4 gap-x-2">
-								<span className="text-muted-foreground text-sm opacity-75 mt-0.5">
-									{education.from} — {education.to}
-								</span>
-								<div className="col-span-3 flex justify-between">
-									<Button
-										asChild
-										variant="link"
-										className="p-0 text-base font-normal gap-1"
-									>
-										<Link
-											href={education.url || ""}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex items-start"
-										>
-											{education.institution}
-											<ExternalArrow className="size-3 mt-1" />
-										</Link>
-									</Button>
+							<>
+								<div
+									key={education.id}
+									className={cn(
+										"flex items-start gap-4",
+										education.hidden && "opacity-50",
+									)}
+								>
+									<div className="w-40">
+										<span className="text-muted-foreground text-sm opacity-75 mt-1">
+											{education.from} — {education.to}
+										</span>
+										<div className="text-muted-foreground opacity-75 text-sm">
+											{education.location}
+										</div>
+									</div>
+									<div className="flex items-center justify-between w-full">
+										<div className="flex flex-col">
+											<button
+												type="button"
+												className={cn(
+													"hover:underline underline-offset-3 transition-all duration-200 ease-out",
+													education.hidden && "opacity-50",
+												)}
+											>
+												<Link
+													href={education.url || ""}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="flex items-start"
+												>
+													{education.institution}
+													<ExternalArrow className="size-3 ml-0.5 mt-1" />
+												</Link>
+											</button>
+											<p className="text-muted-foreground opacity-75 text-sm">
+												{education.fieldOfStudy}, {education.degree}
+											</p>
+										</div>
+										<div className="flex items-center gap-5">
+											<button
+												type="button"
+												className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100"
+											>
+												<Pencil className="size-3" />
+												Edit
+											</button>
+											<button
+												type="button"
+												className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100"
+												onClick={() => hideEducation(education.id)}
+											>
+												{education.hidden ? (
+													<>
+														<Eye className="size-3" />
+														Show
+													</>
+												) : (
+													<>
+														<EyeOff className="size-3" />
+														Hide
+													</>
+												)}
+											</button>
+											<button
+												type="button"
+												className="flex items-center gap-1 cursor-pointer text-[13px] opacity-50 hover:opacity-100 hover:text-destructive transition ease-out duration-100"
+												onClick={() => deleteEducation(education.id)}
+											>
+												<Trash className="size-3" />
+												Delete
+											</button>
+										</div>
+									</div>
 								</div>
-								<div className="text-muted-foreground opacity-75 text-sm">
-									{education.location}
-								</div>
-								<div className="col-span-3">
-									<h4 className="text-muted-foreground text-sm">
-										{education.fieldOfStudy}, {education.degree}
-									</h4>
-								</div>
-								<div className="flex col-span-3 col-start-2 gap-6 mt-4 items-end">
-									<button className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100">
-										<Pencil className="size-3" />
-										Edit
-									</button>
-									<button className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100">
-										<EyeOff className="size-3" />
-										Hide
-									</button>
-									<button className="flex items-center gap-1 cursor-pointer text-[13px] opacity-50 hover:opacity-100 hover:text-destructive transition ease-out duration-100">
-										<Trash className="size-3" />
-										Delete
-									</button>
-								</div>
-							</div>
+								<Separator className="my-5" />
+							</>
 						))}
 					</div>
-				)}
-
-				{educations.length > 0 && showEducationForm && (
-					<Separator className="my-10" />
 				)}
 
 				<AnimatePresence>
 					{showEducationForm && (
 						<motion.div
 							key="education-form"
-							initial={{ opacity: 0, y: -10 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -10 }}
+							initial={{ opacity: 0, y: 5, filter: "blur(8px)" }}
+							animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, y: 5, filter: "blur(8px)" }}
 							transition={{
 								duration: 0.2,
 								ease: "easeOut",
@@ -382,17 +461,3 @@ export function EducationTab({
 		</div>
 	);
 }
-
-const ExternalArrow = ({ className }: { className?: string }) => (
-	<svg
-		className={cn(className)}
-		viewBox="0 0 12 12"
-		fill="currentColor"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<path
-			d="M3.5 3C3.22386 3 3 3.22386 3 3.5C3 3.77614 3.22386 4 3.5 4V3ZM8.5 3.5H9C9 3.22386 8.77614 3 8.5 3V3.5ZM8 8.5C8 8.77614 8.22386 9 8.5 9C8.77614 9 9 8.77614 9 8.5H8ZM2.64645 8.64645C2.45118 8.84171 2.45118 9.15829 2.64645 9.35355C2.84171 9.54882 3.15829 9.54882 3.35355 9.35355L2.64645 8.64645ZM3.5 4H8.5V3H3.5V4ZM8 3.5V8.5H9V3.5H8ZM8.14645 3.14645L2.64645 8.64645L3.35355 9.35355L8.85355 3.85355L8.14645 3.14645Z"
-			fill="var(--grey1)"
-		></path>
-	</svg>
-);

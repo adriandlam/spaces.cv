@@ -18,17 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { projectSchema } from "@/lib/validations/profile";
 import type { ProjectFormData } from "@/types/profile";
-
-interface Project {
-	id: string;
-	title: string;
-	year: string;
-	description: string;
-	company?: string;
-	link?: string;
-	collaborators?: string;
-	createdAt: Date;
-}
+import type { Project } from "@/app/generated/prisma";
 
 interface ProjectsTabProps {
 	projects: Project[];
@@ -38,7 +28,7 @@ interface ProjectsTabProps {
 	isSubmitting: boolean;
 }
 
-export function ProjectsTab({
+export default function ProjectsTab({
 	projects,
 	showProjectForm,
 	onShowProjectForm,

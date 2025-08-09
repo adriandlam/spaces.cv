@@ -10,14 +10,18 @@ import { Info } from "lucide-react";
 import * as React from "react";
 import { SortableTab } from "@/components/sortable-tab";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "../ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { ExternalArrow } from "../icons";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
 
 const defaultProfileTabs = [
 	{ id: "general", label: "General" },
 	{ id: "experience", label: "Experience" },
 	{ id: "education", label: "Education" },
 	{ id: "projects", label: "Projects" },
+	{ id: "contacts", label: "Contact" },
 ] as const;
 
 export type ProfileTab = (typeof defaultProfileTabs)[number]["id"];
@@ -30,13 +34,15 @@ interface ProfileTabsListProps {
 	onDragEnd: (event: DragEndEvent) => void;
 }
 
-export function ProfileTabsList({
+export default function ProfileTabsList({
 	isLoading,
 	activeTab,
 	onTabChange,
 	sectionOrder,
 	onDragEnd,
 }: ProfileTabsListProps) {
+	const { data: session } = useSession();
+
 	// Create ordered profile tabs based on user's section order
 	const profileTabs = React.useMemo(() => {
 		const orderedTabs: (typeof defaultProfileTabs)[number][] = [
@@ -46,7 +52,7 @@ export function ProfileTabsList({
 		if (sectionOrder.length > 0) {
 			sectionOrder.forEach((sectionId: string) => {
 				const tab = defaultProfileTabs.find((t) => t.id === sectionId);
-				if (tab) {
+				if (tab && tab.id !== "general") {
 					orderedTabs.push(tab);
 				}
 			});
@@ -62,14 +68,15 @@ export function ProfileTabsList({
 		<div className="h-full space-y-3 w-48">
 			<div className="flex justify-between items-center">
 				<Label className="text-sm opacity-75">Profile</Label>
-				<Tooltip>
-					<TooltipTrigger>
-						<Info className="size-3 opacity-75 hover:opacity-100 text-muted-foreground" />
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>Your profile is public and displayed in the order you specify</p>
-					</TooltipContent>
-				</Tooltip>
+				<Link href={`/profile/${session?.user?.username}`}>
+					<button
+						type="button"
+						className="flex items-start gap-1 text-xs hover:bg-accent px-2.5 py-1 rounded-md transition-all duration-200 ease-out"
+					>
+						Visit
+						<ExternalArrow className="size-2.5 mt-0.5" />
+					</button>
+				</Link>
 			</div>
 			{!isLoading && (
 				<DndContext

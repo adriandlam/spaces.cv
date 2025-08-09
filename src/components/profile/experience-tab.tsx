@@ -8,7 +8,7 @@ interface ExperienceTabProps {
 	onAddExperience?: () => void;
 }
 
-export function ExperienceTab({ onAddExperience }: ExperienceTabProps) {
+export default function ExperienceTab({ onAddExperience }: ExperienceTabProps) {
 	return (
 		<div>
 			<div className="flex justify-between items-center mb-1">

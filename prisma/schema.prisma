@@ -14,6 +14,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ContactType {
+  EMAIL
+  PHONE
+  WEBSITE
+  X
+  LINKEDIN
+  GITHUB
+  DISCORD
+  LINK
+}
+
 model User {
   id            String    @id
   name          String
@@ -38,8 +49,9 @@ model User {
   projects        Project[]
   educations      Education[]
   workExperiences WorkExperience[]
+  contacts        Contact[]
 
-  sectionOrder String[] @default(["experience", "education", "projects"])
+  sectionOrder String[] @default(["experience", "education", "projects", "contacts"])
 
   @@unique([email])
   @@unique([username])
@@ -103,6 +115,7 @@ model Project {
   collaborators String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  skills        String[] @default([])
 
   // Relations
   userId String
@@ -143,7 +156,7 @@ model WorkExperience {
   to          String? // Can be null for current job
   location    String?
   description String?
-  skills      String? // Comma-separated skills
+  skills      String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -152,4 +165,20 @@ model WorkExperience {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("work_experience")
+}
+
+model Contact {
+  id        String      @id @default(cuid())
+  type      ContactType
+  value     String
+  href      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  hidden    Boolean     @default(false)
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contact")
 }

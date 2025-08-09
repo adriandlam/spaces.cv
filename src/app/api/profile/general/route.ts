@@ -7,18 +7,6 @@ import logger from "@/lib/logger";
 
 export async function PUT(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "PUT",
-      path: "/api/profile/general",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "General profile update request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -69,23 +57,12 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        duration,
-      },
-      "General profile updated successfully"
-    );
-
     return NextResponse.json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -97,7 +74,6 @@ export async function PUT(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "General profile update failed"
     );
@@ -111,18 +87,6 @@ export async function PUT(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "GET",
-      path: "/api/profile/general",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "General profile fetch request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -158,21 +122,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        duration,
-      },
-      "General profile fetched successfully"
-    );
-
     return NextResponse.json({
       user,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -184,7 +137,6 @@ export async function GET(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "General profile fetch failed"
     );

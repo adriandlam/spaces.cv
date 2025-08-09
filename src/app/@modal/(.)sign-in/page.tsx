@@ -26,7 +26,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient, signIn } from "@/lib/auth-client";
-import { GitHubIcon, GoogleIcon } from "@/components/provider-icons";
+import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 
 const emailFormSchema = z.object({

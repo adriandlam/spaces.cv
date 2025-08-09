@@ -3,10 +3,7 @@
 import { Home, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import AuthDialog from "./auth-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const navItems = [
@@ -29,7 +26,6 @@ const navItems = [
 
 export default function Nav() {
 	const pathname = usePathname();
-	const { data: session, isPending } = useSession();
 
 	return (
 		<nav className="h-screen border-r px-3 flex justify-center items-center flex-col gap-6">

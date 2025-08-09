@@ -2,8 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { educationSchema } from "@/lib/validations/profile";
+import { contactSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
+import normalizeUrl from "normalize-url";
 
 export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized education creation attempt");
+      logger.warn({ requestId }, "Unauthorized contact creation attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const validation = educationSchema.safeParse(body);
+    const validation = contactSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
           userId: session.user.id,
           validationErrors: validation.error.issues,
         },
-        "Education validation failed"
+        "Contact validation failed"
       );
 
       return NextResponse.json(
@@ -43,41 +44,47 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const {
-      from,
-      to,
-      degree,
-      institution,
-      location,
-      url,
-      description,
-      classmates,
-      fieldOfStudy,
-      gpa,
-      activities,
-    } = validation.data;
+    const { type, value } = validation.data;
 
-    const education = await prisma.education.create({
+    const trimmedValue = value.trim();
+
+    // For displaying
+    const displayValue =
+      type === "EMAIL" || type === "PHONE"
+        ? trimmedValue
+        : normalizeUrl(trimmedValue, {
+            stripProtocol: true,
+            removeQueryParameters: true,
+            stripWWW: true,
+            removeTrailingSlash: true,
+          });
+
+    // For href
+    const hrefValue =
+      type === "EMAIL"
+        ? `mailto:${trimmedValue}`
+        : type === "PHONE"
+        ? `tel:${trimmedValue}`
+        : normalizeUrl(trimmedValue, {
+            defaultProtocol: "https",
+            forceHttps: true,
+            removeQueryParameters: true,
+            removeTrailingSlash: true,
+          });
+
+    const contact = await prisma.contact.create({
       data: {
-        from: from.trim(),
-        to: to?.trim() || "",
-        degree: degree.trim(),
-        institution: institution.trim(),
-        location: location?.trim() || null,
-        url: url?.trim() || null,
-        description: description?.trim() || null,
-        classmates: classmates?.trim() || null,
-        fieldOfStudy: fieldOfStudy?.trim() || null,
-        gpa: gpa?.trim() || null,
-        activities: activities?.trim() || null,
+        type,
+        href: hrefValue,
+        value: displayValue,
         userId: session.user.id,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Education created successfully",
-      education,
+      message: "Contact created successfully",
+      contact,
     });
   } catch (error) {
     logger.error(
@@ -92,7 +99,7 @@ export async function POST(req: NextRequest) {
               }
             : error,
       },
-      "Education creation failed"
+      "Contact creation failed"
     );
 
     return NextResponse.json(
@@ -111,7 +118,7 @@ export async function PATCH(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized education update attempt");
+      logger.warn({ requestId }, "Unauthorized contact update attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -128,7 +135,7 @@ export async function PATCH(req: NextRequest) {
           userId: session.user.id,
           body,
         },
-        "Invalid education update data"
+        "Invalid contact update data"
       );
 
       return NextResponse.json(
@@ -137,7 +144,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const education = await prisma.education.update({
+    const contact = await prisma.contact.update({
       where: {
         id,
         userId: session.user.id,
@@ -149,8 +156,8 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Education updated successfully",
-      education,
+      message: "Contact updated successfully",
+      contact,
     });
   } catch (error) {
     logger.error(
@@ -165,7 +172,7 @@ export async function PATCH(req: NextRequest) {
               }
             : error,
       },
-      "Education update failed"
+      "Contact update failed"
     );
 
     return NextResponse.json(
@@ -184,7 +191,7 @@ export async function DELETE(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized education delete attempt");
+      logger.warn({ requestId }, "Unauthorized contact delete attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -201,7 +208,7 @@ export async function DELETE(req: NextRequest) {
           userId: session.user.id,
           body,
         },
-        "Invalid education delete data"
+        "Invalid contact delete data"
       );
 
       return NextResponse.json(
@@ -210,7 +217,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await prisma.education.delete({
+    await prisma.contact.delete({
       where: {
         id,
         userId: session.user.id,
@@ -219,7 +226,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Education deleted successfully",
+      message: "Contact deleted successfully",
     });
   } catch (error) {
     logger.error(
@@ -234,7 +241,7 @@ export async function DELETE(req: NextRequest) {
               }
             : error,
       },
-      "Education delete failed"
+      "Contact delete failed"
     );
 
     return NextResponse.json(
@@ -244,7 +251,7 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_: NextRequest) {
   const requestId = crypto.randomUUID();
 
   try {
@@ -253,24 +260,24 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized education fetch attempt");
+      logger.warn({ requestId }, "Unauthorized contacts fetch attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const educations = await prisma.education.findMany({
+    const contacts = await prisma.contact.findMany({
       where: {
         userId: session.user.id,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
 
     return NextResponse.json({
-      educations,
+      contacts,
     });
   } catch (error) {
     logger.error(
@@ -285,7 +292,7 @@ export async function GET(req: NextRequest) {
               }
             : error,
       },
-      "Education fetch failed"
+      "Contacts fetch failed"
     );
 
     return NextResponse.json(

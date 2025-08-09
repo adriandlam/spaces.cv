@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { profileSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
+import type { PublicProfile, SelfProfile } from "@/types/profile";
 
 // TODO: Add rate limiting for profile updates (maybe 5 updates / min / user)
 
@@ -22,11 +23,11 @@ export async function GET(req: NextRequest) {
     "Profile fetch request started"
   );
 
+  let user: PublicProfile | SelfProfile | null = null;
+
   try {
     const searchParams = req.nextUrl.searchParams;
     const username = searchParams.get("username");
-
-    let user;
 
     if (username) {
       // Public profile lookup (no auth)
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
         "Fetching public profile"
       );
 
-      user = await prisma.user.findUnique({
+      const publicUser = await prisma.user.findUnique({
         where: {
           username: username.toLowerCase(),
         },
@@ -49,19 +50,29 @@ export async function GET(req: NextRequest) {
           location: true,
           website: true,
           projects: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: "asc" },
           },
           educations: {
-            orderBy: { from: "desc" },
+            where: {
+              hidden: false,
+            },
+            orderBy: { from: "asc" },
           },
           workExperiences: {
-            orderBy: { from: "desc" },
+            orderBy: { from: "asc" },
           },
           sectionOrder: true,
+          contacts: {
+            where: {
+              hidden: false,
+            },
+            orderBy: { createdAt: "asc" },
+          },
         },
       });
+
+      user = publicUser as PublicProfile | null;
     } else {
-      // Self profile (auth)
       logger.debug({ requestId, type: "self" }, "Fetching self profile");
 
       const session = await auth.api.getSession({
@@ -73,7 +84,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      user = await prisma.user.findUnique({
+      const selfUser = await prisma.user.findUnique({
         where: {
           id: session.user.id,
         },
@@ -88,35 +99,28 @@ export async function GET(req: NextRequest) {
           location: true,
           website: true,
           projects: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: "asc" },
           },
           educations: {
-            orderBy: { from: "desc" },
+            orderBy: { from: "asc" },
           },
           workExperiences: {
-            orderBy: { from: "desc" },
+            orderBy: { from: "asc" },
           },
           sectionOrder: true,
+          contacts: {
+            orderBy: { createdAt: "asc" },
+          },
         },
       });
+
+      user = selfUser as SelfProfile | null;
     }
 
     if (!user) {
       logger.warn({ requestId, username }, "Profile not found");
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: user.id,
-        username: user.username,
-        duration,
-        type: username ? "public" : "self",
-      },
-      "Profile fetched successfully"
-    );
 
     return NextResponse.json({ user });
   } catch (error) {

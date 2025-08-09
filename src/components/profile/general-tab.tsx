@@ -28,7 +28,7 @@ interface GeneralTabProps {
 	userName?: string;
 }
 
-export function GeneralTab({
+export default function GeneralTab({
 	onSubmit,
 	isSubmitting,
 	defaultValues,

@@ -41,7 +41,7 @@ export function SortableTab({
 				className={cn(
 					"w-full justify-start !pl-6 transition-opacity font-normal group",
 					isDragging && "!backdrop-blur-sm",
-					!isActive && "!bg-transparent",
+					!isActive && "opacity-50",
 				)}
 				onClick={onClick}
 			>
@@ -50,8 +50,10 @@ export function SortableTab({
 					<div
 						{...attributes}
 						{...listeners}
-						className="ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+						className="ml-auto text-muted-foreground opacity-0 group-hover:opacity-75 transition-opacity cursor-grab active:cursor-grabbing"
 						onClick={(e) => e.stopPropagation()}
+						onKeyUp={(e) => e.stopPropagation()}
+						tabIndex={0}
 					>
 						<GripHorizontal className="size-4" />
 					</div>

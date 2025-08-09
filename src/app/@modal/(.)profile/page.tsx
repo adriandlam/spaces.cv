@@ -6,28 +6,28 @@ import { Separator } from "@/components/ui/separator";
 import { getSession, useSession } from "@/lib/auth-client";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
-import {
+import type {
+	ContactFormData,
 	EducationFormData,
 	GeneralFormData,
 	ProfileFormData,
 	ProjectFormData,
 } from "@/types/profile";
-import { DragEndEvent } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { EducationTab } from "@/components/profile/education-tab";
-import { ExperienceTab } from "@/components/profile/experience-tab";
-import { GeneralTab } from "@/components/profile/general-tab";
+import EducationTab from "@/components/profile/education-tab";
+import ExperienceTab from "@/components/profile/experience-tab";
+import GeneralTab from "@/components/profile/general-tab";
 import { OnboardingStep } from "@/components/profile/onboarding-step";
-import {
-	ProfileTabsList,
-	type ProfileTab,
-} from "@/components/profile/profile-tabs-list";
-import { ProjectsTab } from "@/components/profile/projects-tab";
+import type { ProfileTab } from "@/components/profile/profile-tabs-list";
+import ProjectsTab from "@/components/profile/projects-tab";
+import ContactsTab from "@/components/profile/contacts-tab";
+import ProfileTabsList from "@/components/profile/profile-tabs-list";
 
 export default function ProfileModal() {
 	const router = useRouter();
@@ -36,15 +36,18 @@ export default function ProfileModal() {
 		user,
 		projects,
 		educations,
+		contacts,
 		sectionOrder,
 		mutateGeneral,
 		mutateProjects,
 		mutateEducation,
+		mutateContacts,
 		mutateSectionOrder,
 		isLoadingSectionOrder,
 		isLoadingGeneral,
 		isLoadingProjects,
 		isLoadingEducation,
+		isLoadingContacts,
 	} = useProfile();
 	const [isOpen, setIsOpen] = useState(true);
 	const [step, setStep] = useState(1); // Default to profile view since most users will be onboarded
@@ -53,6 +56,7 @@ export default function ProfileModal() {
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [showProjectForm, setShowProjectForm] = useState(false);
 	const [showEducationForm, setShowEducationForm] = useState(false);
+	const [showContactForm, setShowContactForm] = useState(false);
 	const [generalFormData, setGeneralFormData] = useState<
 		Partial<GeneralFormData>
 	>({});
@@ -67,6 +71,7 @@ export default function ProfileModal() {
 		setActiveTab(tabId);
 		setShowProjectForm(false);
 		setShowEducationForm(false);
+		setShowContactForm(false);
 		if (tabId === "general") {
 			window.history.pushState(null, "", pathname);
 		} else {
@@ -106,7 +111,7 @@ export default function ProfileModal() {
 			});
 
 			mutateSectionOrder();
-		} catch (error) {
+		} catch (_) {
 			// Revalidate on error to get correct data from server
 			mutateSectionOrder();
 		}
@@ -115,7 +120,13 @@ export default function ProfileModal() {
 	// Read initial tab from URL params
 	useEffect(() => {
 		const tabParam = searchParams.get("tab");
-		const validTabs = ["general", "experience", "education", "projects"];
+		const validTabs = [
+			"general",
+			"experience",
+			"education",
+			"projects",
+			"contacts",
+		];
 		if (tabParam && validTabs.includes(tabParam)) {
 			setActiveTab(tabParam as ProfileTab);
 		} else if (!tabParam) {
@@ -259,6 +270,31 @@ export default function ProfileModal() {
 		}
 	};
 
+	const onContactSubmit = async (data: ContactFormData) => {
+		setIsSubmitting(true);
+		try {
+			const response = await fetch("/api/profile/contacts", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				throw new Error(result.error || "Failed to save contact");
+			}
+
+			// Refresh contacts data
+			mutateContacts();
+			setShowContactForm(false);
+		} catch (error) {
+			console.error("Error saving contact:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
 	const handleSaveChanges = async () => {
 		// Form-based save system that triggers appropriate form submit based on active tab
 		switch (activeTab) {
@@ -292,6 +328,16 @@ export default function ProfileModal() {
 				}
 				break;
 			}
+			case "contacts": {
+				// Trigger contact form submit if form is open and valid
+				const contactForm = document.querySelector(
+					"#contact-form",
+				) as HTMLFormElement;
+				if (contactForm && showContactForm) {
+					contactForm.requestSubmit();
+				}
+				break;
+			}
 			case "experience":
 				// TODO: Handle experience form when implemented
 				break;
@@ -305,6 +351,7 @@ export default function ProfileModal() {
 		setIsSubmitting(false);
 		setShowProjectForm(false);
 		setShowEducationForm(false);
+		setShowContactForm(false);
 	};
 
 	return (
@@ -372,7 +419,8 @@ export default function ProfileModal() {
 											<AnimatePresence>
 												{isLoadingGeneral ||
 												isLoadingProjects ||
-												isLoadingEducation ? (
+												isLoadingEducation ||
+												isLoadingContacts ? (
 													<div className="flex items-center gap-2 absolute top-0 left-0 w-full h-full justify-center">
 														<Loader className="size-4 animate-spin text-muted-foreground" />
 														<p className="text-sm text-muted-foreground">
@@ -409,6 +457,15 @@ export default function ProfileModal() {
 																isSubmitting={isSubmitting}
 															/>
 														)}
+														{activeTab === "contacts" && (
+															<ContactsTab
+																contacts={contacts}
+																showContactForm={showContactForm}
+																onShowContactForm={setShowContactForm}
+																onSubmit={onContactSubmit}
+																isSubmitting={isSubmitting}
+															/>
+														)}
 													</>
 												)}
 											</AnimatePresence>
@@ -420,7 +477,12 @@ export default function ProfileModal() {
 											type="submit"
 											variant="secondary"
 											onClick={handleSaveChanges}
-											disabled={isSubmitting}
+											disabled={
+												isSubmitting ||
+												!showContactForm ||
+												!showEducationForm ||
+												!showProjectForm
+											}
 										>
 											{isSubmitting ? (
 												<>

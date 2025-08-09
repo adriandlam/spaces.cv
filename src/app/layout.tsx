@@ -12,6 +12,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import HomeHeader from "@/components/home-header";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -49,19 +50,7 @@ export default function RootLayout({
 						<div className="flex">
 							<Nav />
 							<div className="flex-1 px-6 py-4 flex flex-col gap-4">
-								<header className="flex justify-center items-center">
-									<ul className="flex gap-6 text-sm ml-auto">
-										<li className="opacity-70 hover:opacity-100 transition-opacity">
-											<Link href="/">About</Link>
-										</li>
-										<li className="opacity-70 hover:opacity-100 transition-opacity">
-											<Link href="/">Features</Link>
-										</li>
-									</ul>
-									<Button className="ml-auto" asChild>
-										<Link href="/sign-in">Get Started</Link>
-									</Button>
-								</header>
+								<HomeHeader />
 								{children}
 							</div>
 						</div>

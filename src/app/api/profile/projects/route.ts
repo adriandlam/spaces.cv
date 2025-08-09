@@ -7,18 +7,6 @@ import logger from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "POST",
-      path: "/api/profile/projects",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Project creation request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -70,24 +58,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        projectId: project.id,
-        duration,
-      },
-      "Project created successfully"
-    );
-
     return NextResponse.json({
       success: true,
       message: "Project created successfully",
       project,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -99,7 +75,6 @@ export async function POST(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Project creation failed"
     );
@@ -113,18 +88,6 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "GET",
-      path: "/api/profile/projects",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Projects fetch request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -148,22 +111,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        projectCount: projects.length,
-        duration,
-      },
-      "Projects fetched successfully"
-    );
-
     return NextResponse.json({
       projects,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -175,7 +126,6 @@ export async function GET(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Projects fetch failed"
     );
