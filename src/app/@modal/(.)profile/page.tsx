@@ -31,7 +31,7 @@ import { ProjectsTab } from "@/components/profile/projects-tab";
 
 export default function ProfileModal() {
 	const router = useRouter();
-	const { data: session, isPending, refetch } = useSession();
+	const { data: session, isPending } = useSession();
 	const {
 		user,
 		projects,
@@ -42,6 +42,9 @@ export default function ProfileModal() {
 		mutateEducation,
 		mutateSectionOrder,
 		isLoadingSectionOrder,
+		isLoadingGeneral,
+		isLoadingProjects,
+		isLoadingEducation,
 	} = useProfile();
 	const [isOpen, setIsOpen] = useState(true);
 	const [step, setStep] = useState(1); // Default to profile view since most users will be onboarded
@@ -257,9 +260,9 @@ export default function ProfileModal() {
 	};
 
 	const handleSaveChanges = async () => {
-		// Router-based save system that triggers appropriate submit based on active tab
+		// Form-based save system that triggers appropriate form submit based on active tab
 		switch (activeTab) {
-			case "general":
+			case "general": {
 				// Trigger general form submit if form is valid
 				const generalForm = document.querySelector(
 					"#general-form",
@@ -268,7 +271,8 @@ export default function ProfileModal() {
 					generalForm.requestSubmit();
 				}
 				break;
-			case "education":
+			}
+			case "education": {
 				// Trigger education form submit if form is open and valid
 				const educationForm = document.querySelector(
 					"#education-form",
@@ -277,7 +281,8 @@ export default function ProfileModal() {
 					educationForm.requestSubmit();
 				}
 				break;
-			case "projects":
+			}
+			case "projects": {
 				// Trigger project form submit if form is open and valid
 				const projectForm = document.querySelector(
 					"#project-form",
@@ -286,6 +291,7 @@ export default function ProfileModal() {
 					projectForm.requestSubmit();
 				}
 				break;
+			}
 			case "experience":
 				// TODO: Handle experience form when implemented
 				break;
@@ -363,35 +369,48 @@ export default function ProfileModal() {
 											onDragEnd={handleDragEnd}
 										/>
 										<Separator orientation="vertical" />
-										<div className="flex-1 px-4">
+										<div className="flex-1 px-4 relative">
 											<AnimatePresence>
-												{activeTab === "general" && (
-													<GeneralTab
-														onSubmit={onGeneralSubmit}
-														isSubmitting={isSubmitting}
-														defaultValues={generalFormData}
-														userImage={session?.user.image ?? undefined}
-														userName={session?.user.name ?? undefined}
-													/>
-												)}
-												{activeTab === "experience" && <ExperienceTab />}
-												{activeTab === "education" && (
-													<EducationTab
-														educations={educations}
-														showEducationForm={showEducationForm}
-														onShowEducationForm={setShowEducationForm}
-														onSubmit={onEducationSubmit}
-														isSubmitting={isSubmitting}
-													/>
-												)}
-												{activeTab === "projects" && (
-													<ProjectsTab
-														projects={projects}
-														showProjectForm={showProjectForm}
-														onShowProjectForm={setShowProjectForm}
-														onSubmit={onProjectSubmit}
-														isSubmitting={isSubmitting}
-													/>
+												{isLoadingGeneral ||
+												isLoadingProjects ||
+												isLoadingEducation ? (
+													<div className="flex items-center gap-2 absolute top-0 left-0 w-full h-full justify-center">
+														<Loader className="size-4 animate-spin text-muted-foreground" />
+														<p className="text-sm text-muted-foreground">
+															Loading profile...
+														</p>
+													</div>
+												) : (
+													<>
+														{activeTab === "general" && (
+															<GeneralTab
+																onSubmit={onGeneralSubmit}
+																isSubmitting={isSubmitting}
+																defaultValues={generalFormData}
+																userImage={session?.user.image ?? undefined}
+																userName={session?.user.name ?? undefined}
+															/>
+														)}
+														{activeTab === "experience" && <ExperienceTab />}
+														{activeTab === "education" && (
+															<EducationTab
+																educations={educations}
+																showEducationForm={showEducationForm}
+																onShowEducationForm={setShowEducationForm}
+																onSubmit={onEducationSubmit}
+																isSubmitting={isSubmitting}
+															/>
+														)}
+														{activeTab === "projects" && (
+															<ProjectsTab
+																projects={projects}
+																showProjectForm={showProjectForm}
+																onShowProjectForm={setShowProjectForm}
+																onSubmit={onProjectSubmit}
+																isSubmitting={isSubmitting}
+															/>
+														)}
+													</>
 												)}
 											</AnimatePresence>
 										</div>
