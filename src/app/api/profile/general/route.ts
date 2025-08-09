@@ -2,12 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { generalSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
-import { z } from "zod";
-
-const sectionOrderSchema = z.object({
-  sectionOrder: z.array(z.string()).min(1).max(10),
-});
 
 export async function PUT(req: NextRequest) {
   const requestId = crypto.randomUUID();
@@ -17,11 +13,11 @@ export async function PUT(req: NextRequest) {
     {
       requestId,
       method: "PUT",
-      path: "/api/profile/section-order",
+      path: "/api/profile/general",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order update request started"
+    "General profile update request started"
   );
 
   try {
@@ -30,7 +26,7 @@ export async function PUT(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order update attempt");
+      logger.warn({ requestId }, "Unauthorized general profile update attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -38,9 +34,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-
-    // Validate using Zod schema
-    const validation = sectionOrderSchema.safeParse(body);
+    const validation = generalSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -49,35 +43,29 @@ export async function PUT(req: NextRequest) {
           userId: session.user.id,
           validationErrors: validation.error.issues,
         },
-        "Section order validation failed"
+        "General profile validation failed"
       );
 
       return NextResponse.json(
         {
-          error: validation.error.issues,
+          error: "Validation failed",
+          details: validation.error.issues,
         },
         { status: 400 }
       );
     }
 
-    const { sectionOrder } = validation.data;
+    const { name, username, title, about, location, website } = validation.data;
 
-    logger.debug(
-      {
-        requestId,
-        userId: session.user.id,
-        sectionOrder,
-      },
-      "Section order update data validated"
-    );
-
-    // Update user section order
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
       data: {
-        sectionOrder,
+        name: name.trim(),
+        username: username.trim(),
+        title: title?.trim() || null,
+        about: about?.trim() || null,
+        location: location?.trim() || null,
+        website: website?.trim() || null,
       },
     });
 
@@ -86,16 +74,15 @@ export async function PUT(req: NextRequest) {
       {
         requestId,
         userId: session.user.id,
-        sectionOrder,
         duration,
       },
-      "Section order updated successfully"
+      "General profile updated successfully"
     );
 
     return NextResponse.json({
       success: true,
-      message: "Section order updated successfully",
-      sectionOrder,
+      message: "Profile updated successfully",
+      user: updatedUser,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -112,7 +99,7 @@ export async function PUT(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order update failed"
+      "General profile update failed"
     );
 
     return NextResponse.json(
@@ -130,11 +117,11 @@ export async function GET(req: NextRequest) {
     {
       requestId,
       method: "GET",
-      path: "/api/profile/section-order",
+      path: "/api/profile/general",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order fetch request started"
+    "General profile fetch request started"
   );
 
   try {
@@ -143,7 +130,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order fetch attempt");
+      logger.warn({ requestId }, "Unauthorized general profile fetch attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -155,16 +142,20 @@ export async function GET(req: NextRequest) {
         id: session.user.id,
       },
       select: {
-        sectionOrder: true,
+        id: true,
+        name: true,
+        username: true,
+        title: true,
+        about: true,
+        location: true,
+        website: true,
+        image: true,
       },
     });
 
     if (!user) {
       logger.warn({ requestId, userId: session.user.id }, "User not found");
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const duration = Date.now() - startTime;
@@ -172,14 +163,13 @@ export async function GET(req: NextRequest) {
       {
         requestId,
         userId: session.user.id,
-        sectionOrderLength: user.sectionOrder?.length || 0,
         duration,
       },
-      "Section order fetched successfully"
+      "General profile fetched successfully"
     );
 
     return NextResponse.json({
-      sectionOrder: user.sectionOrder || ["experience", "education", "projects"],
+      user,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -196,7 +186,7 @@ export async function GET(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order fetch failed"
+      "General profile fetch failed"
     );
 
     return NextResponse.json(

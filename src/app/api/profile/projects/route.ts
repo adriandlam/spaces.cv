@@ -2,26 +2,22 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { projectSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
-import { z } from "zod";
 
-const sectionOrderSchema = z.object({
-  sectionOrder: z.array(z.string()).min(1).max(10),
-});
-
-export async function PUT(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
 
   logger.info(
     {
       requestId,
-      method: "PUT",
-      path: "/api/profile/section-order",
+      method: "POST",
+      path: "/api/profile/projects",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order update request started"
+    "Project creation request started"
   );
 
   try {
@@ -30,7 +26,7 @@ export async function PUT(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order update attempt");
+      logger.warn({ requestId }, "Unauthorized project creation attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -38,9 +34,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-
-    // Validate using Zod schema
-    const validation = sectionOrderSchema.safeParse(body);
+    const validation = projectSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -49,35 +43,30 @@ export async function PUT(req: NextRequest) {
           userId: session.user.id,
           validationErrors: validation.error.issues,
         },
-        "Section order validation failed"
+        "Project validation failed"
       );
 
       return NextResponse.json(
         {
-          error: validation.error.issues,
+          error: "Validation failed",
+          details: validation.error.issues,
         },
         { status: 400 }
       );
     }
 
-    const { sectionOrder } = validation.data;
+    const { title, year, description, company, link, collaborators } =
+      validation.data;
 
-    logger.debug(
-      {
-        requestId,
-        userId: session.user.id,
-        sectionOrder,
-      },
-      "Section order update data validated"
-    );
-
-    // Update user section order
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
+    const project = await prisma.project.create({
       data: {
-        sectionOrder,
+        title: title.trim(),
+        year,
+        description: description.trim(),
+        company: company?.trim() || null,
+        link: link?.trim() || null,
+        collaborators: collaborators?.trim() || null,
+        userId: session.user.id,
       },
     });
 
@@ -86,16 +75,16 @@ export async function PUT(req: NextRequest) {
       {
         requestId,
         userId: session.user.id,
-        sectionOrder,
+        projectId: project.id,
         duration,
       },
-      "Section order updated successfully"
+      "Project created successfully"
     );
 
     return NextResponse.json({
       success: true,
-      message: "Section order updated successfully",
-      sectionOrder,
+      message: "Project created successfully",
+      project,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -112,7 +101,7 @@ export async function PUT(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order update failed"
+      "Project creation failed"
     );
 
     return NextResponse.json(
@@ -130,11 +119,11 @@ export async function GET(req: NextRequest) {
     {
       requestId,
       method: "GET",
-      path: "/api/profile/section-order",
+      path: "/api/profile/projects",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order fetch request started"
+    "Projects fetch request started"
   );
 
   try {
@@ -143,43 +132,35 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order fetch attempt");
+      logger.warn({ requestId }, "Unauthorized projects fetch attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const user = await prisma.user.findUnique({
+    const projects = await prisma.project.findMany({
       where: {
-        id: session.user.id,
+        userId: session.user.id,
       },
-      select: {
-        sectionOrder: true,
+      orderBy: {
+        createdAt: "desc",
       },
     });
-
-    if (!user) {
-      logger.warn({ requestId, userId: session.user.id }, "User not found");
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
 
     const duration = Date.now() - startTime;
     logger.info(
       {
         requestId,
         userId: session.user.id,
-        sectionOrderLength: user.sectionOrder?.length || 0,
+        projectCount: projects.length,
         duration,
       },
-      "Section order fetched successfully"
+      "Projects fetched successfully"
     );
 
     return NextResponse.json({
-      sectionOrder: user.sectionOrder || ["experience", "education", "projects"],
+      projects,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -196,7 +177,7 @@ export async function GET(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order fetch failed"
+      "Projects fetch failed"
     );
 
     return NextResponse.json(

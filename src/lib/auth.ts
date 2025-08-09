@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
-import { magicLink, username } from "better-auth/plugins";
+import { magicLink } from "better-auth/plugins";
 import resend from "./resend";
 
 export const auth = betterAuth({
@@ -19,7 +19,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    username(),
     magicLink({
       sendMagicLink: async ({ email: _email, token: _token, url }) => {
         resend.emails.send({
@@ -34,7 +33,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60,
+      maxAge: 30 * 60, // 30 minutes
     },
   },
   user: {
@@ -53,12 +52,12 @@ export const auth = betterAuth({
         unique: true,
         required: false,
         input: true,
-        validate: (value: string) => {
-          if (value.length < 3 || value.length > 32) {
-            return "Username must be between 3 and 32 characters";
-          }
-          return true;
-        },
+        // validate: (value: string) => {
+        //   if (value.length < 3 || value.length > 32) {
+        //     return "Username must be between 3 and 32 characters";
+        //   }
+        //   return true;
+        // },
       },
       title: {
         type: "string",
@@ -80,24 +79,9 @@ export const auth = betterAuth({
         defaultValue: null,
         input: true,
       },
-      projects: {
-        type: "string[]",
-        defaultValue: [],
-        input: true,
-      },
-      educations: {
-        type: "string[]",
-        defaultValue: [],
-        input: true,
-      },
-      workExperiences: {
-        type: "string[]",
-        defaultValue: [],
-        input: true,
-      },
       sectionOrder: {
         type: "string[]",
-        defaultValue: ["experience", "education", "projects"],
+        defaultValue: [],
         input: true,
       },
     },

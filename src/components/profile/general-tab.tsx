@@ -66,16 +66,10 @@ export function GeneralTab({
 
   return (
     <Form {...generalForm}>
-      <form
-        onSubmit={generalForm.handleSubmit(onSubmit)}
-        className="space-y-4"
-      >
+      <form id="general-form" onSubmit={generalForm.handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex items-center gap-8">
           <Avatar className="ring ring-border size-20 mt-2.5">
-            <AvatarImage
-              src={userImage ?? undefined}
-              alt={userName ?? ""}
-            />
+            <AvatarImage src={userImage ?? undefined} alt={userName ?? ""} />
             <AvatarFallback>
               <Camera
                 strokeWidth={1.5}
@@ -83,66 +77,65 @@ export function GeneralTab({
               />
             </AvatarFallback>
           </Avatar>
-          <div className="space-y-2 w-full">
+          <div className="space-y-3 w-full">
             <FormField
               control={generalForm.control}
               name="name"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <Label aria-required className="text-sm">
+                  <Label htmlFor="name" className="text-sm">
                     Display Name*
                   </Label>
                   <FormControl>
                     <div className="relative">
                       <Input
+                        id="name"
                         {...field}
                         className="w-full"
                         required
                         disabled={isSubmitting}
                       />
                       <AnimatePresence>
-                        {fieldState.error &&
-                          field.value.trim().length > 0 && (
-                            <motion.span
-                              key="name-error"
-                              initial={{
-                                opacity: 0,
-                                y: 10,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                y: 0,
-                              }}
-                              exit={{ opacity: 0, y: 10 }}
-                              transition={{
-                                duration: 0.1,
-                                ease: "easeOut",
-                              }}
-                            >
-                              <CircleX className="text-destructive absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
-                            </motion.span>
-                          )}
-                        {field.value.trim().length > 0 &&
-                          !fieldState.error && (
-                            <motion.span
-                              key="name-success"
-                              initial={{
-                                opacity: 0,
-                                y: 10,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                y: 0,
-                              }}
-                              exit={{ opacity: 0, y: 10 }}
-                              transition={{
-                                duration: 0.1,
-                                ease: "easeOut",
-                              }}
-                            >
-                              <CircleCheck className="text-emerald-400 absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
-                            </motion.span>
-                          )}
+                        {fieldState.error && field.value.trim().length > 0 && (
+                          <motion.span
+                            key="name-error"
+                            initial={{
+                              opacity: 0,
+                              y: 10,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              y: 0,
+                            }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{
+                              duration: 0.1,
+                              ease: "easeOut",
+                            }}
+                          >
+                            <CircleX className="text-destructive absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
+                          </motion.span>
+                        )}
+                        {field.value.trim().length > 0 && !fieldState.error && (
+                          <motion.span
+                            key="name-success"
+                            initial={{
+                              opacity: 0,
+                              y: 10,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              y: 0,
+                            }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{
+                              duration: 0.1,
+                              ease: "easeOut",
+                            }}
+                          >
+                            <CircleCheck className="text-emerald-400 absolute right-2.5 top-1/2 -translate-y-1/2 size-4" />
+                          </motion.span>
+                        )}
                       </AnimatePresence>
                     </div>
                   </FormControl>
@@ -166,9 +159,12 @@ export function GeneralTab({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <Label className="text-sm">What do you do?</Label>
+              <Label htmlFor="title" className="text-sm">
+                What do you do?
+              </Label>
               <FormControl>
                 <Input
+                  id="title"
                   {...field}
                   placeholder="Software Engineer, Designer, etc."
                   className="w-full"
@@ -185,9 +181,12 @@ export function GeneralTab({
           name="about"
           render={({ field }) => (
             <FormItem>
-              <Label className="text-sm">About</Label>
+              <Label htmlFor="about" className="text-sm">
+                About
+              </Label>
               <FormControl>
                 <Textarea
+                  id="about"
                   {...field}
                   placeholder="Tell us about yourself..."
                   className="w-full resize-none"
@@ -205,9 +204,12 @@ export function GeneralTab({
           name="location"
           render={({ field }) => (
             <FormItem>
-              <Label className="text-sm">Location</Label>
+              <Label htmlFor="location" className="text-sm">
+                Location
+              </Label>
               <FormControl>
                 <Input
+                  id="location"
                   {...field}
                   placeholder="San Francisco, CA"
                   className="w-full"
@@ -224,9 +226,12 @@ export function GeneralTab({
           name="website"
           render={({ field }) => (
             <FormItem>
-              <Label className="text-sm">Website</Label>
+              <Label htmlFor="website" className="text-sm">
+                Website
+              </Label>
               <FormControl>
                 <Input
+                  id="website"
                   {...field}
                   placeholder="https://example.com"
                   className="w-full"

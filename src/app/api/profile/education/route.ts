@@ -2,26 +2,22 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { educationSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
-import { z } from "zod";
 
-const sectionOrderSchema = z.object({
-  sectionOrder: z.array(z.string()).min(1).max(10),
-});
-
-export async function PUT(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
 
   logger.info(
     {
       requestId,
-      method: "PUT",
-      path: "/api/profile/section-order",
+      method: "POST",
+      path: "/api/profile/education",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order update request started"
+    "Education creation request started"
   );
 
   try {
@@ -30,7 +26,7 @@ export async function PUT(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order update attempt");
+      logger.warn({ requestId }, "Unauthorized education creation attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -38,9 +34,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-
-    // Validate using Zod schema
-    const validation = sectionOrderSchema.safeParse(body);
+    const validation = educationSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -49,35 +43,46 @@ export async function PUT(req: NextRequest) {
           userId: session.user.id,
           validationErrors: validation.error.issues,
         },
-        "Section order validation failed"
+        "Education validation failed"
       );
 
       return NextResponse.json(
         {
-          error: validation.error.issues,
+          error: "Validation failed",
+          details: validation.error.issues,
         },
         { status: 400 }
       );
     }
 
-    const { sectionOrder } = validation.data;
+    const {
+      from,
+      to,
+      degree,
+      institution,
+      location,
+      url,
+      description,
+      classmates,
+      fieldOfStudy,
+      gpa,
+      activities,
+    } = validation.data;
 
-    logger.debug(
-      {
-        requestId,
-        userId: session.user.id,
-        sectionOrder,
-      },
-      "Section order update data validated"
-    );
-
-    // Update user section order
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
+    const education = await prisma.education.create({
       data: {
-        sectionOrder,
+        from: from.trim(),
+        to: to?.trim() || "",
+        degree: degree.trim(),
+        institution: institution.trim(),
+        location: location?.trim() || null,
+        url: url?.trim() || null,
+        description: description?.trim() || null,
+        classmates: classmates?.trim() || null,
+        fieldOfStudy: fieldOfStudy?.trim() || null,
+        gpa: gpa?.trim() || null,
+        activities: activities?.trim() || null,
+        userId: session.user.id,
       },
     });
 
@@ -86,16 +91,16 @@ export async function PUT(req: NextRequest) {
       {
         requestId,
         userId: session.user.id,
-        sectionOrder,
+        educationId: education.id,
         duration,
       },
-      "Section order updated successfully"
+      "Education created successfully"
     );
 
     return NextResponse.json({
       success: true,
-      message: "Section order updated successfully",
-      sectionOrder,
+      message: "Education created successfully",
+      education,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -112,7 +117,7 @@ export async function PUT(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order update failed"
+      "Education creation failed"
     );
 
     return NextResponse.json(
@@ -130,11 +135,11 @@ export async function GET(req: NextRequest) {
     {
       requestId,
       method: "GET",
-      path: "/api/profile/section-order",
+      path: "/api/profile/education",
       userAgent: req.headers.get("user-agent"),
       ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
     },
-    "Section order fetch request started"
+    "Education fetch request started"
   );
 
   try {
@@ -143,43 +148,35 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized section order fetch attempt");
+      logger.warn({ requestId }, "Unauthorized education fetch attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const user = await prisma.user.findUnique({
+    const educations = await prisma.education.findMany({
       where: {
-        id: session.user.id,
+        userId: session.user.id,
       },
-      select: {
-        sectionOrder: true,
+      orderBy: {
+        createdAt: "desc",
       },
     });
-
-    if (!user) {
-      logger.warn({ requestId, userId: session.user.id }, "User not found");
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
 
     const duration = Date.now() - startTime;
     logger.info(
       {
         requestId,
         userId: session.user.id,
-        sectionOrderLength: user.sectionOrder?.length || 0,
+        educationCount: educations.length,
         duration,
       },
-      "Section order fetched successfully"
+      "Education fetched successfully"
     );
 
     return NextResponse.json({
-      sectionOrder: user.sectionOrder || ["experience", "education", "projects"],
+      educations,
     });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -196,7 +193,7 @@ export async function GET(req: NextRequest) {
             : error,
         duration,
       },
-      "Section order fetch failed"
+      "Education fetch failed"
     );
 
     return NextResponse.json(

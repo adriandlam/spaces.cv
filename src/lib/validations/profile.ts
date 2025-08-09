@@ -97,7 +97,6 @@ export const educationSchema = z.object({
     .regex(/^\d{4}$/, "Please enter a valid 4-digit year"),
   to: z
     .string()
-    .min(1, "End date is required")
     .regex(
       /^(\d{4}|Present)$/,
       "Please enter a valid 4-digit year or 'Present'"

@@ -64,8 +64,8 @@ export function ProjectsTab({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-2">
+    <div className="space-y-7">
+      <div className="flex justify-between items-center mb-1">
         <h3 className="text-xl">Projects</h3>
         <Button
           variant="ghost"
@@ -83,10 +83,7 @@ export function ProjectsTab({
       {projects.length > 0 && (
         <div className="space-y-3">
           {projects.map((project) => (
-            <div
-              key={project.id}
-              className="border rounded-lg p-4 space-y-2"
-            >
+            <div key={project.id} className="border rounded-lg p-4 space-y-2">
               <div className="flex justify-between items-start">
                 <h4 className="font-medium">{project.title}</h4>
                 <span className="text-sm text-muted-foreground">
@@ -136,6 +133,7 @@ export function ProjectsTab({
           >
             <Form {...projectForm}>
               <form
+                id="project-form"
                 onSubmit={projectForm.handleSubmit(onSubmit)}
                 className="space-y-3"
               >
@@ -150,9 +148,7 @@ export function ProjectsTab({
                           <Input
                             {...field}
                             placeholder="My Awesome Project"
-                            className={
-                              fieldState.error ? "border-red-500" : ""
-                            }
+                            className={fieldState.error ? "border-red-500" : ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -169,9 +165,7 @@ export function ProjectsTab({
                           <Input
                             {...field}
                             placeholder="2024"
-                            className={
-                              fieldState.error ? "border-red-500" : ""
-                            }
+                            className={fieldState.error ? "border-red-500" : ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -212,9 +206,7 @@ export function ProjectsTab({
                           <Input
                             {...field}
                             placeholder="Company name"
-                            className={
-                              fieldState.error ? "border-red-500" : ""
-                            }
+                            className={fieldState.error ? "border-red-500" : ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -231,9 +223,7 @@ export function ProjectsTab({
                           <Input
                             {...field}
                             placeholder="https://example.com"
-                            className={
-                              fieldState.error ? "border-red-500" : ""
-                            }
+                            className={fieldState.error ? "border-red-500" : ""}
                           />
                         </FormControl>
                         <FormMessage />
