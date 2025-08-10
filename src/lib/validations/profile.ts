@@ -5,7 +5,7 @@ export const contactTypeEnum = z.enum([
   "EMAIL",
   "PHONE",
   "WEBSITE",
-  "TWITTER",
+  "X",
   "LINKEDIN",
   "GITHUB",
   "DISCORD",
@@ -50,8 +50,8 @@ export const projectSchema = z.object({
     .or(z.literal("")),
   link: z
     .string()
-    .refine((val) => val === "" || /^https?:\/\//.test(val), {
-      message: "Please enter a valid URL starting with http:// or https://",
+    .refine((val) => val === "" || /^https:\/\//.test(val), {
+      message: "Please enter a valid URL starting with https://",
     })
     .optional()
     .or(z.literal("")),
@@ -107,8 +107,8 @@ export const generalSchema = z.object({
     .or(z.literal("")),
   website: z
     .string()
-    .refine((val) => val === "" || /^https?:\/\//.test(val), {
-      message: "Please enter a valid URL starting with http:// or https://",
+    .refine((val) => val === "" || /^https:\/\//.test(val), {
+      message: "Please enter a valid URL starting with https://",
     })
     .optional()
     .or(z.literal("")),

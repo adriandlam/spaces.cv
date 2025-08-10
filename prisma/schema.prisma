@@ -39,6 +39,8 @@ model User {
   onboarded     Boolean   @default(false)
   onboardedAt   DateTime?
 
+  customStatus String?
+
   // Profile fields
   title    String? // What do you do?
   about    String? // About section

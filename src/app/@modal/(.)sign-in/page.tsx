@@ -25,7 +25,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient, signIn } from "@/lib/auth-client";
+import { authClient, signIn, useSession } from "@/lib/auth-client";
 import { GitHubIcon, GoogleIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 
@@ -41,6 +41,7 @@ export default function SignInModal() {
 	const [step, setStep] = useState(0);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitError, setSubmitError] = useState<string | null>(null);
+	const { data: session, isPending } = useSession();
 
 	const router = useRouter();
 
@@ -96,9 +97,11 @@ export default function SignInModal() {
 		setIsSubmitting(false);
 	};
 
+	if (isPending) return null;
+
 	return (
 		<Dialog
-			defaultOpen
+			defaultOpen={!session}
 			onOpenChange={(open) => {
 				if (!open) {
 					resetForm();

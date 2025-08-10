@@ -57,13 +57,14 @@ interface ContactsTabProps {
 	onShowContactForm: (show: boolean) => void;
 	onSubmit: (data: ContactFormData) => Promise<void>;
 	isSubmitting: boolean;
+	onContactsUpdate?: (contacts: Contact[]) => void;
 }
 
 export const contactTypeLabels: Record<Contact["type"], string> = {
 	EMAIL: "Email",
 	PHONE: "Phone",
 	WEBSITE: "Website",
-	TWITTER: "X",
+	X: "X",
 	LINKEDIN: "LinkedIn",
 	GITHUB: "GitHub",
 	DISCORD: "Discord",
@@ -78,7 +79,7 @@ const getPlaceholder = (type: Contact["type"]) => {
 			return "+1 (555) 123-4567";
 		case "WEBSITE":
 			return "https://johndoe.com";
-		case "TWITTER":
+		case "X":
 			return "https://twitter.com/johndoe";
 		case "LINKEDIN":
 			return "https://linkedin.com/in/johndoe";
@@ -99,8 +100,9 @@ export default function ContactsTab({
 	onShowContactForm,
 	onSubmit,
 	isSubmitting,
+	onContactsUpdate,
 }: ContactsTabProps) {
-	const { mutateContacts } = useProfile();
+	// const { mutateContacts } = useProfile();
 	const contactForm = useForm<ContactFormData>({
 		resolver: zodResolver(contactSchema),
 		mode: "onChange",
@@ -118,7 +120,7 @@ export default function ContactsTab({
 		if (
 			(selectedType === "WEBSITE" ||
 				selectedType === "LINK" ||
-				selectedType === "TWITTER" ||
+				selectedType === "X" ||
 				selectedType === "LINKEDIN" ||
 				selectedType === "GITHUB") &&
 			currentValue
@@ -147,14 +149,21 @@ export default function ContactsTab({
 		if (!contact) return;
 
 		try {
-			mutateContacts(
-				{
-					contacts: contacts.map((c) =>
-						c.id === id ? { ...c, hidden: !c.hidden } : c,
-					),
-				},
-				false,
+			const updatedContacts = contacts.map((c) =>
+				c.id === id ? { ...c, hidden: !c.hidden } : c,
 			);
+
+			// mutateContacts(
+			// 	{
+			// 		contacts: updatedContacts,
+			// 	},
+			// 	false,
+			// );
+
+			// Update parent state
+			if (onContactsUpdate) {
+				onContactsUpdate(updatedContacts);
+			}
 
 			const response = await fetch("/api/profile/contacts", {
 				method: "PATCH",
@@ -172,19 +181,20 @@ export default function ContactsTab({
 			}
 		} catch (_) {
 			// Revert on error and revalidate
-			mutateContacts();
+			if (onContactsUpdate) {
+				onContactsUpdate(contacts);
+			}
 		}
 	};
 
 	const deleteContact = async (id: string) => {
 		try {
-			// Optimistic update - remove contact immediately
-			mutateContacts(
-				{
-					contacts: contacts.filter((c) => c.id !== id),
-				},
-				false,
-			);
+			const updatedContacts = contacts.filter((c) => c.id !== id);
+
+			// Update parent state
+			if (onContactsUpdate) {
+				onContactsUpdate(updatedContacts);
+			}
 
 			const response = await fetch("/api/profile/contacts", {
 				method: "DELETE",
@@ -199,14 +209,21 @@ export default function ContactsTab({
 			}
 		} catch (_) {
 			// Revert on error and revalidate
-			mutateContacts();
+			if (onContactsUpdate) {
+				onContactsUpdate(contacts);
+			}
 		}
 	};
 
 	return (
 		<div className="space-y-6">
 			<div className="flex justify-between items-center mb-1">
-				<h3 className="text-xl">Contact</h3>
+				<div>
+					<h3 className="text-xl">Contact</h3>
+					<p className="text-sm text-muted-foreground">
+						Add how people can contact you
+					</p>
+				</div>
 				<Button
 					variant="ghost"
 					size="sm"
@@ -217,10 +234,9 @@ export default function ContactsTab({
 					Add Contact
 				</Button>
 			</div>
-			<Separator />
 
 			{/* Display existing contacts */}
-			<ScrollArea className="h-[65dvh]">
+			<ScrollArea className="h-[65dvh] mt-8">
 				{contacts.length > 0 && (
 					<div>
 						{contacts.map((contact) => (

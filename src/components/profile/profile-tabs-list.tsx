@@ -15,6 +15,7 @@ import { ExternalArrow } from "../icons";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 const defaultProfileTabs = [
 	{ id: "general", label: "General" },
@@ -24,7 +25,15 @@ const defaultProfileTabs = [
 	{ id: "contacts", label: "Contact" },
 ] as const;
 
-export type ProfileTab = (typeof defaultProfileTabs)[number]["id"];
+const extrasTabs = [
+	{ id: "domains", label: "Domains & Publishing" },
+	{ id: "integrations", label: "Integrations" },
+	{ id: "export", label: "Export" },
+] as const;
+
+export type ProfileTab =
+	| (typeof defaultProfileTabs)[number]["id"]
+	| (typeof extrasTabs)[number]["id"];
 
 interface ProfileTabsListProps {
 	isLoading: boolean;
@@ -65,48 +74,63 @@ export default function ProfileTabsList({
 	}, [sectionOrder]);
 
 	return (
-		<div className="h-full space-y-3 w-48">
-			<div className="flex justify-between items-center">
+		<div className="h-full space-y-6 w-48">
+			<div className="space-y-3">
 				<Label className="text-sm opacity-75">Profile</Label>
-				<Link href={`/profile/${session?.user?.username}`}>
-					<button
-						type="button"
-						className="flex items-start gap-1 text-xs hover:bg-accent px-2.5 py-1 rounded-md transition-all duration-200 ease-out"
+				{!isLoading && (
+					<DndContext
+						collisionDetection={closestCenter}
+						onDragEnd={onDragEnd}
+						modifiers={[restrictToVerticalAxis]}
 					>
-						Visit
-						<ExternalArrow className="size-2.5 mt-0.5" />
-					</button>
-				</Link>
+						<SortableContext
+							items={sectionOrder}
+							strategy={verticalListSortingStrategy}
+						>
+							<ul className="space-y-1">
+								{profileTabs.map((tab) => {
+									const isActive = activeTab === tab.id;
+									return (
+										<li key={tab.id}>
+											<SortableTab
+												id={tab.id}
+												label={tab.label}
+												isActive={isActive}
+												onClick={() => onTabChange(tab.id)}
+												isDraggable={tab.id !== "general"}
+											/>
+										</li>
+									);
+								})}
+							</ul>
+						</SortableContext>
+					</DndContext>
+				)}
 			</div>
-			{!isLoading && (
-				<DndContext
-					collisionDetection={closestCenter}
-					onDragEnd={onDragEnd}
-					modifiers={[restrictToVerticalAxis]}
-				>
-					<SortableContext
-						items={sectionOrder}
-						strategy={verticalListSortingStrategy}
-					>
-						<ul className="space-y-1">
-							{profileTabs.map((tab) => {
-								const isActive = activeTab === tab.id;
-								return (
-									<li key={tab.id}>
-										<SortableTab
-											id={tab.id}
-											label={tab.label}
-											isActive={isActive}
-											onClick={() => onTabChange(tab.id)}
-											isDraggable={tab.id !== "general"}
-										/>
-									</li>
-								);
-							})}
-						</ul>
-					</SortableContext>
-				</DndContext>
-			)}
+
+			<div className="space-y-3">
+				<Label className="text-sm opacity-75">Extras</Label>
+				<ul className="space-y-1">
+					{extrasTabs.map((tab) => {
+						const isActive = activeTab === tab.id;
+						return (
+							<li key={tab.id}>
+								<Button
+									variant={isActive ? "secondary" : "ghost"}
+									size="sm"
+									className={cn(
+										"w-full justify-start !pl-6 transition-opacity font-normal",
+										!isActive && "opacity-50",
+									)}
+									onClick={() => onTabChange(tab.id)}
+								>
+									{tab.label}
+								</Button>
+							</li>
+						);
+					})}
+				</ul>
+			</div>
 		</div>
 	);
 }

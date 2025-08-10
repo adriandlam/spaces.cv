@@ -19,7 +19,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
 
 import EducationTab from "@/components/profile/education-tab";
 import ExperienceTab from "@/components/profile/experience-tab";
@@ -29,6 +28,9 @@ import type { ProfileTab } from "@/components/profile/profile-tabs-list";
 import ProjectsTab from "@/components/profile/projects-tab";
 import ContactsTab from "@/components/profile/contacts-tab";
 import ProfileTabsList from "@/components/profile/profile-tabs-list";
+import DomainsTab from "@/components/extras/domains-tab";
+import IntegrationsTab from "@/components/extras/integrations-tab";
+import ExportTab from "@/components/extras/export-tab";
 
 export default function ProfileModalClient({
 	id,
@@ -40,11 +42,11 @@ export default function ProfileModalClient({
 	about,
 	location,
 	website,
-	projects,
-	education,
-	workExperiences,
-	sectionOrder,
-	contacts,
+	projects: initialProjects,
+	education: initialEducation,
+	workExperiences: initialWorkExperiences,
+	sectionOrder: initialSectionOrder,
+	contacts: initialContacts,
 }: ProfileModalData) {
 	const router = useRouter();
 	const { data: session, isPending } = useSession();
@@ -60,36 +62,36 @@ export default function ProfileModalClient({
 		website,
 		image,
 	});
-	const [userProjects, setProjects] = useState(projects);
-	const [userEducation, setEducation] = useState(education);
-	const [userContacts, setContacts] = useState(contacts);
-	const [userSectionOrder, setSectionOrder] = useState(sectionOrder);
+	const [projects, setProjects] = useState(initialProjects);
+	const [education, setEducation] = useState(initialEducation);
+	const [contacts, setContacts] = useState(initialContacts);
+	const [sectionOrder, setSectionOrder] = useState(initialSectionOrder);
 
 	// SWR mutate functions for optimistic updates after mutations
-	const { mutate: mutateGeneral } = useSWR("/api/profile/general", null, {
-		revalidateOnMount: false,
-		revalidateOnFocus: false,
-	});
-	const { mutate: mutateProjects } = useSWR("/api/profile/projects", null, {
-		revalidateOnMount: false,
-		revalidateOnFocus: false,
-	});
-	const { mutate: mutateEducation } = useSWR("/api/profile/education", null, {
-		revalidateOnMount: false,
-		revalidateOnFocus: false,
-	});
-	const { mutate: mutateContacts } = useSWR("/api/profile/contacts", null, {
-		revalidateOnMount: false,
-		revalidateOnFocus: false,
-	});
-	const { mutate: mutateSectionOrder } = useSWR(
-		"/api/profile/section-order",
-		null,
-		{
-			revalidateOnMount: false,
-			revalidateOnFocus: false,
-		},
-	);
+	// const { mutate: mutateGeneral } = useSWR("/api/profile/general", null, {
+	// 	revalidateOnMount: false,
+	// 	revalidateOnFocus: false,
+	// });
+	// const { mutate: mutateProjects } = useSWR("/api/profile/projects", null, {
+	// 	revalidateOnMount: false,
+	// 	revalidateOnFocus: false,
+	// });
+	// const { mutate: mutateEducation } = useSWR("/api/profile/education", null, {
+	// 	revalidateOnMount: false,
+	// 	revalidateOnFocus: false,
+	// });
+	// const { mutate: mutateContacts } = useSWR("/api/profile/contacts", null, {
+	// 	revalidateOnMount: false,
+	// 	revalidateOnFocus: false,
+	// });
+	// const { mutate: mutateSectionOrder } = useSWR(
+	// 	"/api/profile/section-order",
+	// 	null,
+	// 	{
+	// 		revalidateOnMount: false,
+	// 		revalidateOnFocus: false,
+	// 	},
+	// );
 
 	const [isOpen, setIsOpen] = useState(true);
 	const [step, setStep] = useState(1);
@@ -161,6 +163,9 @@ export default function ProfileModalClient({
 			"education",
 			"projects",
 			"contacts",
+			"domains",
+			"integrations",
+			"export",
 		];
 		if (tabParam && validTabs.includes(tabParam)) {
 			setActiveTab(tabParam as ProfileTab);
@@ -246,10 +251,10 @@ export default function ProfileModalClient({
 			}
 
 			// Refresh projects data and update local state
-			const updatedProjects = await mutateProjects();
-			if (updatedProjects?.projects) {
-				setProjects(updatedProjects.projects);
-			}
+			// const updatedProjects = await mutateProjects();
+			// if (updatedProjects?.projects) {
+			// 	setProjects(updatedProjects.projects);
+			// }
 			setShowProjectForm(false);
 		} catch (error) {
 			console.error("Error saving project:", error);
@@ -277,7 +282,6 @@ export default function ProfileModalClient({
 			if (result.user) {
 				setUser(result.user);
 			}
-			mutateGeneral();
 		} catch (error) {
 			console.error("Error saving general info:", error);
 		} finally {
@@ -300,11 +304,7 @@ export default function ProfileModalClient({
 				throw new Error(result.error || "Failed to save education");
 			}
 
-			// Refresh education data and update local state
-			const updatedEducation = await mutateEducation();
-			if (updatedEducation?.educations) {
-				setEducation(updatedEducation.education);
-			}
+			setEducation(result.education);
 			setShowEducationForm(false);
 		} catch (error) {
 			console.error("Error saving education:", error);
@@ -328,11 +328,7 @@ export default function ProfileModalClient({
 				throw new Error(result.error || "Failed to save contact");
 			}
 
-			// Refresh contacts data and update local state
-			const updatedContacts = await mutateContacts();
-			if (updatedContacts?.contacts) {
-				setContacts(updatedContacts.contacts);
-			}
+			setContacts(result.contacts);
 			setShowContactForm(false);
 		} catch (error) {
 			console.error("Error saving contact:", error);
@@ -451,7 +447,7 @@ export default function ProfileModalClient({
 											isLoading={false}
 											activeTab={activeTab}
 											onTabChange={handleTabChange}
-											sectionOrder={userSectionOrder}
+											sectionOrder={sectionOrder}
 											onDragEnd={handleDragEnd}
 										/>
 										<Separator orientation="vertical" />
@@ -468,16 +464,17 @@ export default function ProfileModalClient({
 											{activeTab === "experience" && <ExperienceTab />}
 											{activeTab === "education" && (
 												<EducationTab
-													education={userEducation}
+													education={education}
 													showEducationForm={showEducationForm}
 													onShowEducationForm={setShowEducationForm}
 													onSubmit={onEducationSubmit}
 													isSubmitting={isSubmitting}
+													onEducationUpdate={setEducation}
 												/>
 											)}
 											{activeTab === "projects" && (
 												<ProjectsTab
-													projects={userProjects}
+													projects={projects}
 													showProjectForm={showProjectForm}
 													onShowProjectForm={setShowProjectForm}
 													onSubmit={onProjectSubmit}
@@ -486,13 +483,17 @@ export default function ProfileModalClient({
 											)}
 											{activeTab === "contacts" && (
 												<ContactsTab
-													contacts={userContacts}
+													contacts={contacts}
 													showContactForm={showContactForm}
 													onShowContactForm={setShowContactForm}
 													onSubmit={onContactSubmit}
 													isSubmitting={isSubmitting}
+													onContactsUpdate={setContacts}
 												/>
 											)}
+											{activeTab === "domains" && <DomainsTab />}
+											{activeTab === "integrations" && <IntegrationsTab />}
+											{activeTab === "export" && <ExportTab />}
 										</div>
 									</div>
 									<div className="flex justify-end space-x-2 pt-8 absolute right-0 -bottom-1">

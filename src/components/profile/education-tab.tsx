@@ -31,6 +31,7 @@ interface EducationTabProps {
 	onShowEducationForm: (show: boolean) => void;
 	onSubmit: (data: EducationFormData) => Promise<void>;
 	isSubmitting: boolean;
+	onEducationUpdate?: (education: Education[]) => void;
 }
 
 export default function EducationTab({
@@ -39,8 +40,8 @@ export default function EducationTab({
 	onShowEducationForm,
 	onSubmit,
 	isSubmitting,
+	onEducationUpdate,
 }: EducationTabProps) {
-	const { mutateEducation } = useProfile();
 	const educationForm = useForm<EducationFormData>({
 		resolver: zodResolver(educationSchema),
 		mode: "onChange",
@@ -69,15 +70,14 @@ export default function EducationTab({
 		if (!edu) return;
 
 		try {
-			// Optimistic update without revalidation
-			mutateEducation(
-				{
-					education: education.map((e) =>
-						e.id === id ? { ...e, hidden: !e.hidden } : e,
-					),
-				},
-				false,
+			const updatedEducation = education.map((e) =>
+				e.id === id ? { ...e, hidden: !e.hidden } : e,
 			);
+
+			// Update parent state
+			if (onEducationUpdate) {
+				onEducationUpdate(updatedEducation);
+			}
 
 			const response = await fetch("/api/profile/education", {
 				method: "PATCH",
@@ -86,7 +86,7 @@ export default function EducationTab({
 				},
 				body: JSON.stringify({
 					id,
-					hidden: !education.hidden,
+					hidden: !edu.hidden,
 				}),
 			});
 
@@ -95,19 +95,20 @@ export default function EducationTab({
 			}
 		} catch (_) {
 			// Revert on error and revalidate
-			mutateEducation();
+			if (onEducationUpdate) {
+				onEducationUpdate(education);
+			}
 		}
 	};
 
 	const deleteEducation = async (id: string) => {
 		try {
-			// Optimistic update - remove education immediately
-			mutateEducation(
-				{
-					education: education.filter((e) => e.id !== id),
-				},
-				false,
-			);
+			const updatedEducation = education.filter((e) => e.id !== id);
+
+			// Update parent state
+			if (onEducationUpdate) {
+				onEducationUpdate(updatedEducation);
+			}
 
 			const response = await fetch("/api/profile/education", {
 				method: "DELETE",
@@ -122,14 +123,21 @@ export default function EducationTab({
 			}
 		} catch (_) {
 			// Revert on error and revalidate
-			mutateEducation();
+			if (onEducationUpdate) {
+				onEducationUpdate(education);
+			}
 		}
 	};
 
 	return (
-		<div className="space-y-6">
+		<div>
 			<div className="flex justify-between items-center mb-1">
-				<h3 className="text-xl">Education</h3>
+				<div>
+					<h3 className="text-xl">Education</h3>
+					<p className="text-sm text-muted-foreground">
+						Add any info about where you went to school and your degree
+					</p>
+				</div>
 				<Button
 					variant="ghost"
 					size="sm"
@@ -140,10 +148,9 @@ export default function EducationTab({
 					Add Education
 				</Button>
 			</div>
-			<Separator />
 
 			{/* Display existing education */}
-			<ScrollArea className="h-[65dvh]">
+			<ScrollArea className="h-[65dvh] mt-8">
 				{education.length > 0 && (
 					<div className="space-y-3">
 						{education.map((edu) => (

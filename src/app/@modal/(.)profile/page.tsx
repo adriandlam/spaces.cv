@@ -1,11 +1,12 @@
 import ProfileModalClient from "@/components/profile/profile-modal-client";
 import { getProfileModalData } from "@/lib/profile";
+import { notFound } from "next/navigation";
 
 export default async function ProfileModal() {
 	const profileData = await getProfileModalData();
 
 	if (!profileData) {
-		return <div>Unable to load profile data</div>;
+		notFound();
 	}
 
 	return <ProfileModalClient {...profileData} />;

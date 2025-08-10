@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
+import normalizeUrl from "normalize-url";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;
@@ -194,7 +195,7 @@ export default function GeneralTab({
 									{...field}
 									placeholder="Tell us about yourself..."
 									className="w-full resize-none"
-									rows={3}
+									rows={8}
 									disabled={isSubmitting}
 								/>
 							</FormControl>

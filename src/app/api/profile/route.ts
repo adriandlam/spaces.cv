@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { profileSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
-import type { PublicProfile, SelfProfile } from "@/types/profile";
+import type { PublicProfile, ProfileModalData } from "@/types/profile";
 
 // TODO: Add rate limiting for profile updates (maybe 5 updates / min / user)
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     "Profile fetch request started"
   );
 
-  let user: PublicProfile | SelfProfile | null = null;
+  let user: PublicProfile | ProfileModalData | null = null;
 
   try {
     const searchParams = req.nextUrl.searchParams;
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         "Fetching public profile"
       );
 
-      const publicUser = await prisma.user.findUnique({
+      user = (await prisma.user.findUnique({
         where: {
           username: username.toLowerCase(),
         },
@@ -68,17 +68,19 @@ export async function GET(req: NextRequest) {
             },
             orderBy: { createdAt: "asc" },
           },
+          customStatus: true,
         },
-      });
+      })) as PublicProfile;
 
-      if (publicUser) {
+      if (user) {
         // Ensure sectionOrder has a default value if empty
-        const sectionOrder = publicUser.sectionOrder.length > 0 
-          ? publicUser.sectionOrder 
-          : ["experience", "education", "projects", "contacts"];
-        
+        const sectionOrder =
+          user.sectionOrder.length > 0
+            ? user.sectionOrder
+            : ["experience", "education", "projects", "contacts"];
+
         user = {
-          ...publicUser,
+          ...user,
           sectionOrder,
         } as PublicProfile;
       } else {
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      const selfUser = await prisma.user.findUnique({
+      user = (await prisma.user.findUnique({
         where: {
           id: session.user.id,
         },
@@ -123,10 +125,11 @@ export async function GET(req: NextRequest) {
           contacts: {
             orderBy: { createdAt: "asc" },
           },
+          customStatus: true,
         },
-      });
+      })) as ProfileModalData;
 
-      user = selfUser as SelfProfile | null;
+      // user = selfUser as ProfileModalData | null;
     }
 
     if (!user) {
@@ -162,18 +165,6 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "POST",
-      path: "/api/profile",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Profile update request started"
-  );
 
   try {
     const session = await auth.api.getSession({
@@ -268,24 +259,12 @@ export async function POST(req: NextRequest) {
       headers: await headers(),
     });
 
-    const duration = Date.now() - startTime;
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        newUsername: sanitizedUsername,
-        duration,
-      },
-      "Profile updated successfully"
-    );
-
     return NextResponse.json({
       success: true,
       message: "Profile updated successfully",
       user: updatedSession?.user || null,
     });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -297,7 +276,6 @@ export async function POST(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Profile update failed"
     );

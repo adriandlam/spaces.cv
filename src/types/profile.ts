@@ -33,6 +33,7 @@ export interface PublicProfile {
   workExperiences: WorkExperience[];
   sectionOrder: string[];
   contacts: Contact[];
+  customStatus: string | null;
 }
 
 export interface ProfileModalData {

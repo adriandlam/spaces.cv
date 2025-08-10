@@ -18,7 +18,6 @@ export default function ExperienceTab({ onAddExperience }: ExperienceTabProps) {
 					Add Experience
 				</Button>
 			</div>
-			<Separator />
 		</div>
 	);
 }

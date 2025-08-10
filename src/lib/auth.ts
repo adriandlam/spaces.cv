@@ -21,10 +21,10 @@ export const auth = betterAuth({
   plugins: [
     username(),
     magicLink({
-      sendMagicLink: async ({ email: _email, token: _token, url }) => {
+      sendMagicLink: async ({ email, url }) => {
         resend.emails.send({
-          from: "Acme <onboarding@resend.dev>",
-          to: "delivered@resend.dev",
+          from: "Spaces <hello@spaces.cv>",
+          to: email,
           subject: "Magic Link",
           html: `<p>Click <a href="${url}">here</a> to sign in</p>`,
         });
@@ -83,6 +83,11 @@ export const auth = betterAuth({
       sectionOrder: {
         type: "string[]",
         defaultValue: ["experience", "education", "projects", "contacts"],
+        input: true,
+      },
+      customStatus: {
+        type: "string",
+        defaultValue: null,
         input: true,
       },
     },

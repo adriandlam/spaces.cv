@@ -8,7 +8,14 @@ import normalizeUrl from "normalize-url";
 import Link from "next/link";
 import { ExternalArrow, getContactIcon } from "../icons";
 import { contactTypeLabels } from "./contacts-tab";
-import { Bookmark, Mail, MoreHorizontal, Share, UserPlus2 } from "lucide-react";
+import {
+	Bookmark,
+	Mail,
+	MoreHorizontal,
+	Share,
+	SmilePlus,
+	UserPlus2,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { Separator } from "../ui/separator";
@@ -35,11 +42,19 @@ export default function ProfilePage({
 				transition={{ duration: 0.2, ease: "easeOut" }}
 			>
 				<div className="flex items-center gap-4">
-					<Avatar className="size-20 border">
-						<AvatarFallback className="text-xl tracking-wider uppercase">
-							{profile?.name.split(" ").map((name) => name.charAt(0))}
-						</AvatarFallback>
-					</Avatar>
+					<div className="relative">
+						<Avatar className="size-20 border">
+							<AvatarFallback className="text-xl tracking-wider uppercase">
+								{profile?.name.split(" ").map((name) => name.charAt(0))}
+							</AvatarFallback>
+						</Avatar>
+						<button
+							type="button"
+							className="absolute bottom-1 right-1 bg-muted rounded-full flex items-center justify-center shadow-sm"
+						>
+							<SmilePlus className="size-5 opacity-50" />
+						</button>
+					</div>
 					<div className="">
 						<div
 							className="cursor-default relative h-7 inline-flex"
@@ -101,11 +116,11 @@ export default function ProfilePage({
 				</div>
 				{profile?.about && (
 					<motion.div
-						className="space-y-6"
+						className="space-y-4"
 						initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 						animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 						exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-						transition={{ delay: 0.1, duration: 0.15, ease: "easeOut" }}
+						transition={{ delay: 0.05, duration: 0.15, ease: "easeOut" }}
 					>
 						<Label className="text-foreground">About</Label>
 						<p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
@@ -122,7 +137,14 @@ export default function ProfilePage({
 					if (!sectionLength) return null;
 
 					return (
-						<motion.div key={section} className="space-y-6">
+						<motion.div
+							key={section}
+							className="space-y-4"
+							initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+							animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+							transition={{ delay: 0.1, duration: 0.15, ease: "easeOut" }}
+						>
 							<Label className="text-foreground">
 								{section.charAt(0).toUpperCase() + section.slice(1)}
 							</Label>

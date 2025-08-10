@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { generalSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
+import normalizeUrl from "normalize-url";
 
 export async function PUT(req: NextRequest) {
   const requestId = crypto.randomUUID();
@@ -53,7 +54,14 @@ export async function PUT(req: NextRequest) {
         title: title?.trim() || null,
         about: about?.trim() || null,
         location: location?.trim() || null,
-        website: website?.trim() || null,
+        website: website
+          ? normalizeUrl(website, {
+              stripProtocol: true,
+              removeQueryParameters: true,
+              stripWWW: true,
+              removeTrailingSlash: true,
+            })
+          : null,
       },
     });
 
