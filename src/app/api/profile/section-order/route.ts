@@ -5,8 +5,8 @@ import prisma from "@/lib/prisma";
 import logger from "@/lib/logger";
 import { z } from "zod";
 
-const sectionOrderSchema = z.object({
-  sectionOrder: z.array(z.string()).min(1).max(10),
+const profileOrderSchema = z.object({
+  profileOrder: z.array(z.string()).min(1).max(10),
 });
 
 export async function PUT(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     // Validate using Zod schema
-    const validation = sectionOrderSchema.safeParse(body);
+    const validation = profileOrderSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -48,13 +48,13 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { sectionOrder } = validation.data;
+    const { profileOrder } = validation.data;
 
     logger.debug(
       {
         requestId,
         userId: session.user.id,
-        sectionOrder,
+        profileOrder,
       },
       "Section order update data validated"
     );
@@ -65,14 +65,14 @@ export async function PUT(req: NextRequest) {
         id: session.user.id,
       },
       data: {
-        sectionOrder,
+        profileOrder,
       },
     });
 
     return NextResponse.json({
       success: true,
       message: "Section order updated successfully",
-      sectionOrder,
+      profileOrder,
     });
   } catch (error) {
     logger.error(
@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
         id: session.user.id,
       },
       select: {
-        sectionOrder: true,
+        profileOrder: true,
       },
     });
 
@@ -128,7 +128,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
-      sectionOrder: user.sectionOrder || [
+      profileOrder: user.profileOrder || [
         "experience",
         "education",
         "projects",

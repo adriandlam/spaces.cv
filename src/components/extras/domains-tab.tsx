@@ -54,10 +54,10 @@ export default function DomainsTab() {
 			<ScrollArea className="h-[65dvh] mt-10">
 				<div className="space-y-2">
 					<Label className="text-foreground">Published URL</Label>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-sm text-muted-foreground">
 						Your published URL can be used to share your profile with others
 					</p>
-					<div>
+					<div className="pt-2">
 						{/* URL Input Section */}
 						<div className="space-y-2">
 							<div className="relative max-w-sm">
@@ -136,29 +136,24 @@ export default function DomainsTab() {
 						</div>
 					</div>
 				</div>
-				<div className="mt-8 space-y-4">
-					<Label className="text-foreground text-lg">Search & Discovery</Label>
-					<div className="flex items-center justify-between">
-						<div className="space-y-1">
-							<Label className="text-foreground">Allow indexing</Label>
-							<p className="text-xs text-muted-foreground">
-								Allow search engines to index your public profile
-							</p>
-						</div>
-						<Switch />
-					</div>
-				</div>
-				<div className="mt-8 space-y-4">
+				<div className="mt-8 flex items-center justify-between">
 					<div className="space-y-2">
-						<Label className="text-foreground text-lg">Font Family</Label>
-						<p className="text-xs text-muted-foreground">
-							Change the font family shown on{" "}
-							<span className="text-foreground">
-								{session?.user?.username}.{process.env.NEXT_PUBLIC_APP_DOMAIN}
-							</span>
+						<Label className="text-foreground">Allow indexing</Label>
+						<p className="text-sm text-muted-foreground">
+							Allow search engines to index your public profile
 						</p>
 					</div>
-					<div className="flex items-center gap-5">
+					<Switch />
+				</div>
+				<div className="mt-8 space-y-2">
+					<Label className="text-foreground">Font Family</Label>
+					<p className="text-sm text-muted-foreground">
+						Change the font family shown on{" "}
+						<span className="text-foreground">
+							{session?.user?.username}.{process.env.NEXT_PUBLIC_APP_DOMAIN}
+						</span>
+					</p>
+					<div className="flex items-center gap-5 pt-2">
 						{["sans", "serif", "mono"].map((font) => (
 							<div
 								key={font}

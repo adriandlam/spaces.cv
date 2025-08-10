@@ -53,7 +53,7 @@ model User {
   workExperiences WorkExperience[]
   contacts        Contact[]
 
-  sectionOrder String[] @default(["experience", "education", "projects", "contacts"])
+  profileOrder String[] @default(["experience", "education", "projects", "contacts"])
 
   @@unique([email])
   @@unique([username])

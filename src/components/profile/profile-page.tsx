@@ -128,7 +128,7 @@ export default function ProfilePage({
 						</p>
 					</motion.div>
 				)}
-				{profile?.sectionOrder.map((section) => {
+				{profile?.profileOrder.map((section) => {
 					if (section === "general") return null;
 
 					const sectionLength =

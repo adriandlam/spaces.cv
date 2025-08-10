@@ -44,7 +44,7 @@ export default function ProfileModalClient({
 	projects: initialProjects,
 	education: initialEducation,
 	workExperiences: initialWorkExperiences,
-	sectionOrder: initialSectionOrder,
+	profileOrder: initialprofileOrder,
 	contacts: initialContacts,
 }: ProfileModalData) {
 	const router = useRouter();
@@ -64,7 +64,7 @@ export default function ProfileModalClient({
 	const [projects, setProjects] = useState(initialProjects);
 	const [education, setEducation] = useState(initialEducation);
 	const [contacts, setContacts] = useState(initialContacts);
-	const [sectionOrder, setSectionOrder] = useState(initialSectionOrder);
+	const [profileOrder, setprofileOrder] = useState(initialprofileOrder);
 
 	// SWR mutate functions for optimistic updates after mutations
 	// const { mutate: mutateGeneral } = useSWR("/api/profile/general", null, {
@@ -83,7 +83,7 @@ export default function ProfileModalClient({
 	// 	revalidateOnMount: false,
 	// 	revalidateOnFocus: false,
 	// });
-	// const { mutate: mutateSectionOrder } = useSWR(
+	// const { mutate: mutateprofileOrder } = useSWR(
 	// 	"/api/profile/section-order",
 	// 	null,
 	// 	{
@@ -126,7 +126,7 @@ export default function ProfileModalClient({
 
 		if (!over || active.id === over.id) return;
 
-		const currentOrder = sectionOrder;
+		const currentOrder = profileOrder;
 
 		const oldIndex = currentOrder.indexOf(active.id as string);
 		const newIndex = currentOrder.indexOf(over.id as string);
@@ -136,7 +136,7 @@ export default function ProfileModalClient({
 		const newOrder = arrayMove(currentOrder, oldIndex, newIndex);
 
 		// Optimistically update local state
-		setSectionOrder(newOrder);
+		setprofileOrder(newOrder);
 
 		try {
 			await fetch("/api/profile/section-order", {
@@ -145,12 +145,12 @@ export default function ProfileModalClient({
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					sectionOrder: newOrder,
+					profileOrder: newOrder,
 				}),
 			});
 		} catch (_) {
 			// Revert on error
-			setSectionOrder(currentOrder);
+			setprofileOrder(currentOrder);
 		}
 	};
 
@@ -446,7 +446,7 @@ export default function ProfileModalClient({
 											isLoading={false}
 											activeTab={activeTab}
 											onTabChange={handleTabChange}
-											sectionOrder={sectionOrder}
+											profileOrder={profileOrder}
 											onDragEnd={handleDragEnd}
 										/>
 										<Separator orientation="vertical" />

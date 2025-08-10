@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
           workExperiences: {
             orderBy: { from: "asc" },
           },
-          sectionOrder: true,
+          profileOrder: true,
           contacts: {
             where: {
               hidden: false,
@@ -73,15 +73,15 @@ export async function GET(req: NextRequest) {
       })) as PublicProfile;
 
       if (user) {
-        // Ensure sectionOrder has a default value if empty
-        const sectionOrder =
-          user.sectionOrder.length > 0
-            ? user.sectionOrder
+        // Ensure profileOrder has a default value if empty
+        const profileOrder =
+          user.profileOrder.length > 0
+            ? user.profileOrder
             : ["experience", "education", "projects", "contacts"];
 
         user = {
           ...user,
-          sectionOrder,
+          profileOrder,
         } as PublicProfile;
       } else {
         user = null;
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
           workExperiences: {
             orderBy: { from: "asc" },
           },
-          sectionOrder: true,
+          profileOrder: true,
           contacts: {
             orderBy: { createdAt: "asc" },
           },

@@ -39,7 +39,7 @@ interface ProfileTabsListProps {
 	isLoading: boolean;
 	activeTab: ProfileTab;
 	onTabChange: (tabId: ProfileTab) => void;
-	sectionOrder: string[];
+	profileOrder: string[];
 	onDragEnd: (event: DragEndEvent) => void;
 }
 
@@ -47,7 +47,7 @@ export default function ProfileTabsList({
 	isLoading,
 	activeTab,
 	onTabChange,
-	sectionOrder,
+	profileOrder,
 	onDragEnd,
 }: ProfileTabsListProps) {
 	const { data: session } = useSession();
@@ -58,8 +58,8 @@ export default function ProfileTabsList({
 			defaultProfileTabs[0],
 		]; // Always keep "general" first
 
-		if (sectionOrder.length > 0) {
-			sectionOrder.forEach((sectionId: string) => {
+		if (profileOrder.length > 0) {
+			profileOrder.forEach((sectionId: string) => {
 				const tab = defaultProfileTabs.find((t) => t.id === sectionId);
 				if (tab && tab.id !== "general") {
 					orderedTabs.push(tab);
@@ -71,7 +71,7 @@ export default function ProfileTabsList({
 		}
 
 		return orderedTabs;
-	}, [sectionOrder]);
+	}, [profileOrder]);
 
 	return (
 		<div className="h-full space-y-6 w-48">
@@ -84,7 +84,7 @@ export default function ProfileTabsList({
 						modifiers={[restrictToVerticalAxis]}
 					>
 						<SortableContext
-							items={sectionOrder}
+							items={profileOrder}
 							strategy={verticalListSortingStrategy}
 						>
 							<ul className="space-y-1">
