@@ -39,7 +39,7 @@ export function useProfile() {
   return {
     user: generalData?.user,
     projects: projectsData?.projects || [],
-    educations: educationData?.educations || [],
+    education: educationData?.education || [],
     contacts: contactsData?.contacts || [],
     sectionOrder: sectionOrderData?.sectionOrder || [
       "experience",

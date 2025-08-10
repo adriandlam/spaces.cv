@@ -29,7 +29,7 @@ export interface PublicProfile {
   location: string | null;
   website: string | null;
   projects: Project[];
-  educations: Education[];
+  education: Education[];
   workExperiences: WorkExperience[];
   sectionOrder: string[];
   contacts: Contact[];
@@ -46,7 +46,7 @@ export interface ProfileModalData {
   location: string | null;
   website: string | null;
   projects: Project[];
-  educations: Education[];
+  education: Education[];
   workExperiences: WorkExperience[];
   sectionOrder: string[];
   contacts: Contact[];

@@ -26,7 +26,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
 
 interface EducationTabProps {
-	educations: Education[];
+	education: Education[];
 	showEducationForm: boolean;
 	onShowEducationForm: (show: boolean) => void;
 	onSubmit: (data: EducationFormData) => Promise<void>;
@@ -34,7 +34,7 @@ interface EducationTabProps {
 }
 
 export default function EducationTab({
-	educations,
+	education,
 	showEducationForm,
 	onShowEducationForm,
 	onSubmit,
@@ -65,14 +65,14 @@ export default function EducationTab({
 	};
 
 	const hideEducation = async (id: string) => {
-		const education = educations.find((e) => e.id === id);
-		if (!education) return;
+		const edu = education.find((e) => e.id === id);
+		if (!edu) return;
 
 		try {
 			// Optimistic update without revalidation
 			mutateEducation(
 				{
-					educations: educations.map((e) =>
+					education: education.map((e) =>
 						e.id === id ? { ...e, hidden: !e.hidden } : e,
 					),
 				},
@@ -104,7 +104,7 @@ export default function EducationTab({
 			// Optimistic update - remove education immediately
 			mutateEducation(
 				{
-					educations: educations.filter((e) => e.id !== id),
+					education: education.filter((e) => e.id !== id),
 				},
 				false,
 			);
@@ -144,23 +144,23 @@ export default function EducationTab({
 
 			{/* Display existing education */}
 			<ScrollArea className="h-[65dvh]">
-				{educations.length > 0 && (
+				{education.length > 0 && (
 					<div className="space-y-3">
-						{educations.map((education) => (
+						{education.map((edu) => (
 							<>
 								<div
-									key={education.id}
+									key={edu.id}
 									className={cn(
 										"flex items-start gap-4",
-										education.hidden && "opacity-50",
+										edu.hidden && "opacity-50",
 									)}
 								>
 									<div className="w-40">
 										<span className="text-muted-foreground text-sm opacity-75 mt-1">
-											{education.from} — {education.to}
+											{edu.from} — {edu.to}
 										</span>
 										<div className="text-muted-foreground opacity-75 text-sm">
-											{education.location}
+											{edu.location}
 										</div>
 									</div>
 									<div className="flex items-center justify-between w-full">
@@ -169,21 +169,21 @@ export default function EducationTab({
 												type="button"
 												className={cn(
 													"hover:underline underline-offset-3 transition-all duration-200 ease-out",
-													education.hidden && "opacity-50",
+													edu.hidden && "opacity-50",
 												)}
 											>
 												<Link
-													href={education.url || ""}
+													href={edu.url || ""}
 													target="_blank"
 													rel="noopener noreferrer"
 													className="flex items-start"
 												>
-													{education.institution}
+													{edu.institution}
 													<ExternalArrow className="size-3 ml-0.5 mt-1" />
 												</Link>
 											</button>
 											<p className="text-muted-foreground opacity-75 text-sm">
-												{education.fieldOfStudy}, {education.degree}
+												{edu.fieldOfStudy}, {edu.degree}
 											</p>
 										</div>
 										<div className="flex items-center gap-5">
@@ -197,9 +197,9 @@ export default function EducationTab({
 											<button
 												type="button"
 												className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100"
-												onClick={() => hideEducation(education.id)}
+												onClick={() => hideEducation(edu.id)}
 											>
-												{education.hidden ? (
+												{edu.hidden ? (
 													<>
 														<Eye className="size-3" />
 														Show
@@ -214,7 +214,7 @@ export default function EducationTab({
 											<button
 												type="button"
 												className="flex items-center gap-1 cursor-pointer text-[13px] opacity-50 hover:opacity-100 hover:text-destructive transition ease-out duration-100"
-												onClick={() => deleteEducation(education.id)}
+												onClick={() => deleteEducation(edu.id)}
 											>
 												<Trash className="size-3" />
 												Delete

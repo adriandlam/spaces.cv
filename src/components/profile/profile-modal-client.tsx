@@ -41,7 +41,7 @@ export default function ProfileModalClient({
 	location,
 	website,
 	projects,
-	educations,
+	education,
 	workExperiences,
 	sectionOrder,
 	contacts,
@@ -50,9 +50,18 @@ export default function ProfileModalClient({
 	const { data: session, isPending } = useSession();
 
 	// State for data with initial server data
-	const [user, setUser] = useState({ id, name, username, title, about, location, website, image });
+	const [user, setUser] = useState({
+		id,
+		name,
+		username,
+		title,
+		about,
+		location,
+		website,
+		image,
+	});
 	const [userProjects, setProjects] = useState(projects);
-	const [userEducations, setEducations] = useState(educations);
+	const [userEducation, setEducation] = useState(education);
 	const [userContacts, setContacts] = useState(contacts);
 	const [userSectionOrder, setSectionOrder] = useState(sectionOrder);
 
@@ -294,7 +303,7 @@ export default function ProfileModalClient({
 			// Refresh education data and update local state
 			const updatedEducation = await mutateEducation();
 			if (updatedEducation?.educations) {
-				setEducations(updatedEducation.educations);
+				setEducation(updatedEducation.education);
 			}
 			setShowEducationForm(false);
 		} catch (error) {
@@ -459,7 +468,7 @@ export default function ProfileModalClient({
 											{activeTab === "experience" && <ExperienceTab />}
 											{activeTab === "education" && (
 												<EducationTab
-													educations={userEducations}
+													education={userEducation}
 													showEducationForm={showEducationForm}
 													onShowEducationForm={setShowEducationForm}
 													onSubmit={onEducationSubmit}

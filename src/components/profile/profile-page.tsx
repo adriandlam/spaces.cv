@@ -100,74 +100,107 @@ export default function ProfilePage({
 					</div>
 				</div>
 				{profile?.about && (
-					<div className="space-y-6">
+					<motion.div
+						className="space-y-6"
+						initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+						animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+						exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+						transition={{ delay: 0.1, duration: 0.15, ease: "easeOut" }}
+					>
 						<Label className="text-foreground">About</Label>
 						<p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
 							{profile?.about}
 						</p>
-					</div>
+					</motion.div>
 				)}
 				{profile?.sectionOrder.map((section) => {
-					switch (section) {
-						case "education":
-							return (
-								<div key={section} className="space-y-6">
-									<Label className="text-foreground">Education</Label>
-									<div className="space-y-4">
-										{profile?.educations.map((education) => (
-											<div key={education.id} className="flex gap-2">
-												<div className="flex flex-col opacity-50 w-40 mt-1">
-													<p className="text-sm">
-														{education.from} — {education.to}
-													</p>
-												</div>
-												<div className="space-y-2">
-													<Link
-														href={education.url || ""}
-														className="inline-flex gap-0.5 text-sm opacity-80 hover:underline underline-offset-3 hover:opacity-100 duration-200 ease-out"
-													>
-														{education.institution}
-														<ExternalArrow className="size-3 mt-0.5" />
-													</Link>
-													<p className="text-muted-foreground opacity-75 text-sm">
-														{education.fieldOfStudy}, {education.degree}
-													</p>
-												</div>
-												<p className="text-sm ml-auto mt-1 opacity-50">
-													{education.location}
+					if (section === "general") return null;
+
+					const sectionLength =
+						profile?.[section as keyof PublicProfile]?.length ?? 0;
+
+					if (!sectionLength) return null;
+
+					return (
+						<motion.div key={section} className="space-y-6">
+							<Label className="text-foreground">
+								{section.charAt(0).toUpperCase() + section.slice(1)}
+							</Label>
+							<div className="space-y-4">
+								{section === "education" &&
+									profile?.education.map((edu) => (
+										<div key={edu.id} className="flex gap-2">
+											<div className="flex flex-col opacity-50 w-40 mt-1">
+												<p className="text-sm">
+													{edu.from} — {edu.to}
 												</p>
 											</div>
-										))}
-									</div>
-								</div>
-							);
-						case "contacts":
-							return (
-								<div key={section} className="space-y-6">
-									<Label className="text-foreground">Contact</Label>
-									<div className="space-y-4">
-										{profile?.contacts.map((contact) => (
-											<div key={contact.id} className="flex items-center gap-2">
-												<div className="flex items-center gap-2 opacity-50 w-40">
-													{getContactIcon(contact.type)}
-													<p className="text-sm">
-														{contactTypeLabels[contact.type]}
-													</p>
-												</div>
+											<div className="space-y-2">
 												<Link
-													href={contact.href}
+													href={edu.url || ""}
 													className="inline-flex gap-0.5 text-sm opacity-80 hover:underline underline-offset-3 hover:opacity-100 duration-200 ease-out"
 												>
-													{contact.value}
+													{edu.institution}
 													<ExternalArrow className="size-3 mt-0.5" />
 												</Link>
+												<p className="text-muted-foreground opacity-75 text-sm">
+													{edu.fieldOfStudy}, {edu.degree}
+												</p>
 											</div>
-										))}
-									</div>
-								</div>
-							);
-					}
+											<p className="text-sm ml-auto mt-1 opacity-50">
+												{edu.location}
+											</p>
+										</div>
+									))}
+								{section === "contacts" &&
+									profile?.contacts.map((contact) => (
+										<div key={contact.id} className="flex items-center gap-2">
+											<div className="flex items-center gap-2 opacity-50 w-40">
+												{getContactIcon(contact.type)}
+												<p className="text-sm">
+													{contactTypeLabels[contact.type]}
+												</p>
+											</div>
+											<Link
+												href={contact.href}
+												className="inline-flex gap-0.5 text-sm opacity-80 hover:underline underline-offset-3 hover:opacity-100 duration-200 ease-out"
+											>
+												{contact.value}
+												<ExternalArrow className="size-3 mt-0.5" />
+											</Link>
+										</div>
+									))}
+							</div>
+						</motion.div>
+					);
 				})}
+
+				{/* // 	case "contacts":
+					// 		return (
+					// 			<div key={section} className="space-y-6">
+					// 				<Label className="text-foreground">Contact</Label>
+					// 				<div className="space-y-4">
+					// 					{profile?.contacts.map((contact) => (
+					// 						<div key={contact.id} className="flex items-center gap-2">
+					// 							<div className="flex items-center gap-2 opacity-50 w-40">
+					// 								{getContactIcon(contact.type)}
+					// 								<p className="text-sm">
+					// 									{contactTypeLabels[contact.type]}
+					// 								</p>
+					// 							</div>
+					// 							<Link
+					// 								href={contact.href}
+					// 								className="inline-flex gap-0.5 text-sm opacity-80 hover:underline underline-offset-3 hover:opacity-100 duration-200 ease-out"
+					// 							>
+					// 								{contact.value}
+					// 								<ExternalArrow className="size-3 mt-0.5" />
+					// 							</Link>
+					// 						</div>
+					// 					))}
+					// 				</div>
+					// 			</div>
+					// 		);
+					// } */}
 			</motion.div>
 		</div>
 	);

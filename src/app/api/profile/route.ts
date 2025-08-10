@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
           projects: {
             orderBy: { createdAt: "asc" },
           },
-          educations: {
+          education: {
             where: {
               hidden: false,
             },
@@ -71,7 +71,19 @@ export async function GET(req: NextRequest) {
         },
       });
 
-      user = publicUser as PublicProfile | null;
+      if (publicUser) {
+        // Ensure sectionOrder has a default value if empty
+        const sectionOrder = publicUser.sectionOrder.length > 0 
+          ? publicUser.sectionOrder 
+          : ["experience", "education", "projects", "contacts"];
+        
+        user = {
+          ...publicUser,
+          sectionOrder,
+        } as PublicProfile;
+      } else {
+        user = null;
+      }
     } else {
       logger.debug({ requestId, type: "self" }, "Fetching self profile");
 
@@ -101,7 +113,7 @@ export async function GET(req: NextRequest) {
           projects: {
             orderBy: { createdAt: "asc" },
           },
-          educations: {
+          education: {
             orderBy: { from: "asc" },
           },
           workExperiences: {

@@ -82,7 +82,7 @@ export const auth = betterAuth({
       },
       sectionOrder: {
         type: "string[]",
-        defaultValue: [],
+        defaultValue: ["experience", "education", "projects", "contacts"],
         input: true,
       },
     },

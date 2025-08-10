@@ -6,7 +6,7 @@ import type { PublicProfile, ProfileModalData } from "@/types/profile";
 export async function getPublicProfile(
   username: string
 ): Promise<PublicProfile | null> {
-  return (await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: {
       username: username.toLowerCase(),
     },
@@ -22,7 +22,7 @@ export async function getPublicProfile(
       projects: {
         orderBy: { createdAt: "asc" },
       },
-      educations: {
+      education: {
         where: {
           hidden: false,
         },
@@ -39,7 +39,19 @@ export async function getPublicProfile(
         orderBy: { createdAt: "asc" },
       },
     },
-  })) as PublicProfile | null;
+  });
+  
+  if (!user) return null;
+  
+  // Ensure sectionOrder has a default value if empty
+  const sectionOrder = user.sectionOrder.length > 0 
+    ? user.sectionOrder 
+    : ["experience", "education", "projects", "contacts"];
+  
+  return {
+    ...user,
+    sectionOrder,
+  } as PublicProfile;
 }
 
 export async function getProfileModalData(): Promise<ProfileModalData | null> {
@@ -69,7 +81,7 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
         projects: {
           orderBy: { createdAt: "asc" },
         },
-        educations: {
+        education: {
           orderBy: { from: "asc" },
         },
         workExperiences: {
@@ -82,7 +94,17 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
       },
     });
 
-    return data;
+    if (!data) return null;
+    
+    // Ensure sectionOrder has a default value if empty
+    const sectionOrder = data.sectionOrder.length > 0 
+      ? data.sectionOrder 
+      : ["experience", "education", "projects", "contacts"];
+    
+    return {
+      ...data,
+      sectionOrder,
+    };
   } catch (error) {
     console.error("Error fetching profile data:", error);
     return null;

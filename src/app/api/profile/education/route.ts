@@ -260,7 +260,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const educations = await prisma.education.findMany({
+    const education = await prisma.education.findMany({
       where: {
         userId: session.user.id,
       },
@@ -270,7 +270,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      educations,
+      education,
     });
   } catch (error) {
     logger.error(

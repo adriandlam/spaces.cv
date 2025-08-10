@@ -1,5 +1,5 @@
 import ProfileModalClient from "@/components/profile/profile-modal-client";
-import { getProfileModalData } from "@/lib/profile-helpers";
+import { getProfileModalData } from "@/lib/profile";
 
 export default async function ProfileModal() {
 	const profileData = await getProfileModalData();

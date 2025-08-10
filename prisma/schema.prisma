@@ -47,7 +47,7 @@ model User {
 
   // Relations
   projects        Project[]
-  educations      Education[]
+  education       Education[]
   workExperiences WorkExperience[]
   contacts        Contact[]
 
