@@ -35,7 +35,7 @@ export interface PublicProfile {
   contacts: Contact[];
 }
 
-export interface SelfProfile {
+export interface ProfileModalData {
   id: string;
   name: string;
   username: string | null; // May be null during onboarding

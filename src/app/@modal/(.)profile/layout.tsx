@@ -3,9 +3,9 @@
 import { DndContext } from "@dnd-kit/core";
 
 export default function ProfileLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return <DndContext>{children}</DndContext>;
+	return <DndContext>{children}</DndContext>;
 }

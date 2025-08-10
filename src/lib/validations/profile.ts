@@ -85,7 +85,19 @@ export const generalSchema = z.object({
     .or(z.literal("")),
   about: z
     .string()
-    .max(500, "About section must be less than 500 characters")
+    .refine(
+      (val) => {
+        if (!val || val.trim() === "") return true;
+        const words = val
+          .trim()
+          .split(/\s+/)
+          .filter((word) => word.length > 0);
+        return words.length <= 200;
+      },
+      {
+        message: "About section must be less than 200 words",
+      }
+    )
     .optional()
     .or(z.literal("")),
   location: z
