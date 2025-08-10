@@ -1,11 +1,11 @@
 "use client";
 
-import { ExternalArrow } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff, Pencil, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import type { Education } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -18,12 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { educationSchema } from "@/lib/validations/profile";
-import type { EducationFormData } from "@/types/profile";
-import { ScrollArea } from "../ui/scroll-area";
-import type { Education } from "@/app/generated/prisma";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
+import { educationSchema } from "@/lib/validations/profile";
+import type { EducationFormData } from "@/types/profile";
+import { ExternalArrow } from "../icons";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface EducationTabProps {
 	education: Education[];

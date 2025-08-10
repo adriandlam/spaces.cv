@@ -1,6 +1,6 @@
-import { Contact } from "@/app/generated/prisma";
+import { Globe, Link2, Mail, Phone } from "lucide-react";
+import type { Contact } from "@/app/generated/prisma";
 import { cn } from "@/lib/utils";
-import { Link2, Globe, Mail, Phone } from "lucide-react";
 
 export const ExternalArrow = ({ className }: { className?: string }) => (
 	<svg

@@ -1,7 +1,7 @@
-import ProfilePage from "@/components/profile/profile-page";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import ProfilePage from "@/components/profile/profile-page";
+import { auth } from "@/lib/auth";
 import { getPublicProfile } from "@/lib/profile";
 
 export default async function ProfilePageWrapper({

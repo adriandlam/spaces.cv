@@ -3,10 +3,6 @@
 import { Home, Search, User, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Avatar, AvatarFallback } from "./ui/avatar";
-import { useSession } from "@/lib/auth-client";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -15,7 +11,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const navItems = [
 	{

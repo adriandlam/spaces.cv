@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Home, Search, User } from "lucide-react";
 import Link from "next/link";
+import HomeHeader from "@/components/home-header";
 import Nav from "@/components/nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import HomeHeader from "@/components/home-header";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",

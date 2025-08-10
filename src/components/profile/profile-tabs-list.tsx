@@ -7,15 +7,15 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Info } from "lucide-react";
+import Link from "next/link";
 import * as React from "react";
 import { SortableTab } from "@/components/sortable-tab";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { ExternalArrow } from "../icons";
-import { Button } from "../ui/button";
-import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { ExternalArrow } from "../icons";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const defaultProfileTabs = [
 	{ id: "general", label: "General" },

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, CircleCheck, CircleX } from "lucide-react";
+import normalizeUrl from "normalize-url";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,7 +20,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
-import normalizeUrl from "normalize-url";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;

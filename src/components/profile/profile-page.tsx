@@ -1,13 +1,7 @@
 "use client";
 
+import type { Session } from "better-auth";
 import { AnimatePresence, motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import type { PublicProfile } from "@/types/profile";
-import { Label } from "../ui/label";
-import normalizeUrl from "normalize-url";
-import Link from "next/link";
-import { ExternalArrow, getContactIcon } from "../icons";
-import { contactTypeLabels } from "./contacts-tab";
 import {
 	Bookmark,
 	Mail,
@@ -16,11 +10,17 @@ import {
 	SmilePlus,
 	UserPlus2,
 } from "lucide-react";
-import { Button } from "../ui/button";
+import Link from "next/link";
+import normalizeUrl from "normalize-url";
 import { useState } from "react";
+import type { PublicProfile } from "@/types/profile";
+import { ExternalArrow, getContactIcon } from "../icons";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import type { Session } from "better-auth";
+import { contactTypeLabels } from "./contacts-tab";
 
 export default function ProfilePage({
 	profile,

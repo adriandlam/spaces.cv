@@ -13,14 +13,7 @@ import {
 	CommandShortcut,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import {
-	Calculat,
-	CreditCard,
-	Smileor,
-	Calendar,
-	User,
-	CornerDownLeft,
-} from "lucide-react";
+import { CornerDownLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

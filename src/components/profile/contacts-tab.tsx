@@ -1,21 +1,5 @@
 "use client";
 
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	DiscordIcon,
-	ExternalArrow,
-	GitHubIcon,
-	LinkedinIcon,
-	TwitterIcon,
-} from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -30,7 +14,9 @@ import {
 	Trash,
 } from "lucide-react";
 import Link from "next/link";
+import normalizeUrl from "normalize-url";
 import { useForm } from "react-hook-form";
+import type { Contact } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -41,15 +27,29 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { contactSchema } from "@/lib/validations/profile";
-import type { ContactFormData } from "@/types/profile";
-import { ScrollArea } from "../ui/scroll-area";
-import type { Contact } from "@/app/generated/prisma";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
-import normalizeUrl from "normalize-url";
-import { getContactIcon } from "../icons";
+import { contactSchema } from "@/lib/validations/profile";
+import type { ContactFormData } from "@/types/profile";
+import {
+	DiscordIcon,
+	ExternalArrow,
+	GitHubIcon,
+	getContactIcon,
+	LinkedinIcon,
+	TwitterIcon,
+} from "../icons";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface ContactsTabProps {
 	contacts: Contact[];

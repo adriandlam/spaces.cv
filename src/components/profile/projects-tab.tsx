@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
+import type { Project } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -18,7 +19,6 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { projectSchema } from "@/lib/validations/profile";
 import type { ProjectFormData } from "@/types/profile";
-import type { Project } from "@/app/generated/prisma";
 
 interface ProjectsTabProps {
 	projects: Project[];

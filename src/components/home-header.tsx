@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "./ui/button";
-import { signOut, useSession } from "@/lib/auth-client";
 import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "@/lib/auth-client";
+import { Button } from "./ui/button";
 
 export default function HomeHeader() {
 	const router = useRouter();

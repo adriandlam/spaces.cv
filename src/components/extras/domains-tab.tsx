@@ -1,18 +1,18 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
 import { Check, Copy, EyeOff, Loader, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { ExternalArrow } from "../icons";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Switch } from "../ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function DomainsTab() {
 	const { data: session, isPending } = useSession();
@@ -160,7 +160,10 @@ export default function DomainsTab() {
 					</div>
 					<div className="flex items-center gap-5">
 						{["sans", "serif", "mono"].map((font) => (
-							<div key={font} className="space-y-2 flex flex-col items-center">
+							<div
+								key={font}
+								className="space-y-1.5 flex flex-col items-center"
+							>
 								<button
 									type="button"
 									className={cn(

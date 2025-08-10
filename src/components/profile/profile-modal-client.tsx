@@ -1,5 +1,22 @@
 "use client";
 
+import type { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import DomainsTab from "@/components/extras/domains-tab";
+import ExportTab from "@/components/extras/export-tab";
+import IntegrationsTab from "@/components/extras/integrations-tab";
+import ContactsTab from "@/components/profile/contacts-tab";
+import EducationTab from "@/components/profile/education-tab";
+import ExperienceTab from "@/components/profile/experience-tab";
+import GeneralTab from "@/components/profile/general-tab";
+import { OnboardingStep } from "@/components/profile/onboarding-step";
+import type { ProfileTab } from "@/components/profile/profile-tabs-list";
+import ProfileTabsList from "@/components/profile/profile-tabs-list";
+import ProjectsTab from "@/components/profile/projects-tab";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -13,24 +30,6 @@ import type {
 	ProfileModalData,
 	ProjectFormData,
 } from "@/types/profile";
-import type { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
-import { AnimatePresence, motion } from "framer-motion";
-import { Loader } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-import EducationTab from "@/components/profile/education-tab";
-import ExperienceTab from "@/components/profile/experience-tab";
-import GeneralTab from "@/components/profile/general-tab";
-import { OnboardingStep } from "@/components/profile/onboarding-step";
-import type { ProfileTab } from "@/components/profile/profile-tabs-list";
-import ProjectsTab from "@/components/profile/projects-tab";
-import ContactsTab from "@/components/profile/contacts-tab";
-import ProfileTabsList from "@/components/profile/profile-tabs-list";
-import DomainsTab from "@/components/extras/domains-tab";
-import IntegrationsTab from "@/components/extras/integrations-tab";
-import ExportTab from "@/components/extras/export-tab";
 
 export default function ProfileModalClient({
 	id,
