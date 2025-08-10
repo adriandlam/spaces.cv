@@ -6,7 +6,7 @@ import { Eye, EyeOff, Pencil, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
 import { useForm } from "react-hook-form";
-import type { Contact } from "@/app/generated/prisma";
+import type { Contact, ContactType } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -94,7 +94,7 @@ export default function ContactsTab({
 		},
 	});
 
-	const selectedType = contactForm.watch("type");
+	const selectedType = contactForm.watch("type") as ContactType;
 	const currentValue = contactForm.watch("value");
 
 	// Normalize URL on blur for website/link types
@@ -226,7 +226,7 @@ export default function ContactsTab({
 								<div
 									key={contact.id}
 									className={cn(
-										"flex items-center gap-2",
+										"flex items-center gap-2 transition-all duration-200 ease-out",
 										contact.hidden && "opacity-50",
 									)}
 								>
@@ -319,7 +319,7 @@ export default function ContactsTab({
 												<Label className="text-sm">Type*</Label>
 												<FormControl>
 													<Select
-														value={field.value}
+														value={field.value as string}
 														onValueChange={field.onChange}
 													>
 														<SelectTrigger className="w-full border-0 shadow-none">

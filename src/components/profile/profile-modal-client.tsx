@@ -20,7 +20,7 @@ import ProjectsTab from "@/components/profile/projects-tab";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { getSession, useSession } from "@/lib/auth-client";
+import { getSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import type {
 	ContactFormData,
@@ -29,9 +29,12 @@ import type {
 	ProfileFormData,
 	ProfileModalData,
 	ProjectFormData,
+	SessionUser,
 } from "@/types/profile";
+import type { ProfilePreferences } from "@/app/generated/prisma";
 
 export default function ProfileModalClient({
+	user,
 	id,
 	name,
 	username,
@@ -46,12 +49,14 @@ export default function ProfileModalClient({
 	workExperiences: initialWorkExperiences,
 	profileOrder: initialprofileOrder,
 	contacts: initialContacts,
-}: ProfileModalData) {
+	profilePreferences: initialProfilePreferences,
+}: ProfileModalData & {
+	user: NonNullable<SessionUser>["user"];
+}) {
 	const router = useRouter();
-	const { data: session, isPending } = useSession();
 
 	// State for data with initial server data
-	const [user, setUser] = useState({
+	const [profile, setProfile] = useState({
 		id,
 		name,
 		username,
@@ -65,32 +70,9 @@ export default function ProfileModalClient({
 	const [education, setEducation] = useState(initialEducation);
 	const [contacts, setContacts] = useState(initialContacts);
 	const [profileOrder, setprofileOrder] = useState(initialprofileOrder);
-
-	// SWR mutate functions for optimistic updates after mutations
-	// const { mutate: mutateGeneral } = useSWR("/api/profile/general", null, {
-	// 	revalidateOnMount: false,
-	// 	revalidateOnFocus: false,
-	// });
-	// const { mutate: mutateProjects } = useSWR("/api/profile/projects", null, {
-	// 	revalidateOnMount: false,
-	// 	revalidateOnFocus: false,
-	// });
-	// const { mutate: mutateEducation } = useSWR("/api/profile/education", null, {
-	// 	revalidateOnMount: false,
-	// 	revalidateOnFocus: false,
-	// });
-	// const { mutate: mutateContacts } = useSWR("/api/profile/contacts", null, {
-	// 	revalidateOnMount: false,
-	// 	revalidateOnFocus: false,
-	// });
-	// const { mutate: mutateprofileOrder } = useSWR(
-	// 	"/api/profile/section-order",
-	// 	null,
-	// 	{
-	// 		revalidateOnMount: false,
-	// 		revalidateOnFocus: false,
-	// 	},
-	// );
+	const [profilePreferences, setProfilePreferences] = useState(
+		initialProfilePreferences,
+	);
 
 	const [isOpen, setIsOpen] = useState(true);
 	const [step, setStep] = useState(1);
@@ -174,23 +156,23 @@ export default function ProfileModalClient({
 	}, [searchParams]);
 
 	useEffect(() => {
-		if (session?.user && !session.user.onboarded) {
+		if (user && !user.onboarded) {
 			setStep(0);
 		}
-	}, [session?.user]);
+	}, [user]);
 
 	useEffect(() => {
-		if (user) {
+		if (profile) {
 			setGeneralFormData({
-				name: user.name || "",
-				username: user.username || "",
-				title: user.title || "",
-				about: user.about || "",
-				location: user.location || "",
-				website: user.website || "",
+				name: profile.name || "",
+				username: profile.username || "",
+				title: profile.title || "",
+				about: profile.about || "",
+				location: profile.location || "",
+				website: profile.website || "",
 			});
 		}
-	}, [user]);
+	}, [profile]);
 
 	const onSubmit = async (data: ProfileFormData) => {
 		setIsSubmitting(true);
@@ -226,7 +208,7 @@ export default function ProfileModalClient({
 	};
 
 	const handleClose = () => {
-		if (session?.user.onboarded) {
+		if (user.onboarded) {
 			setIsOpen(false);
 			router.back();
 		} else {
@@ -279,7 +261,7 @@ export default function ProfileModalClient({
 
 			// Update local state with response data
 			if (result.user) {
-				setUser(result.user);
+				setProfile(result.user);
 			}
 		} catch (error) {
 			console.error("Error saving general info:", error);
@@ -331,6 +313,30 @@ export default function ProfileModalClient({
 			setShowContactForm(false);
 		} catch (error) {
 			console.error("Error saving contact:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onProfilePreferencesSubmit = async (data: ProfilePreferences) => {
+		setIsSubmitting(true);
+		try {
+			const response = await fetch("/api/profile/profile-preferences", {
+				method: "PUT",
+
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				throw new Error(result.error || "Failed to update profile preferences");
+			}
+
+			setProfilePreferences(result.profilePreferences);
+		} catch (error) {
+			console.error("Error saving profile preferences:", error);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -411,7 +417,7 @@ export default function ProfileModalClient({
 				showCloseButton={false}
 			>
 				<AnimatePresence mode="wait">
-					{isPending ? (
+					{/* {isPending ? (
 						<div
 							key="loading"
 							className="fixed inset-0 flex justify-center items-center h-full gap-2"
@@ -422,100 +428,106 @@ export default function ProfileModalClient({
 							</p>
 						</div>
 					) : (
-						<>
-							{step === 0 && (
-								<OnboardingStep
-									onSubmit={onSubmit}
-									isSubmitting={isSubmitting}
-									submitError={submitError}
+						<> */}
+					{step === 0 && (
+						<OnboardingStep
+							onSubmit={onSubmit}
+							isSubmitting={isSubmitting}
+							submitError={submitError}
+						/>
+					)}
+					{step === 1 && (
+						<motion.div
+							key="profile"
+							initial={{ x: step !== 1 ? "-125%" : 0 }}
+							animate={{ x: 0 }}
+							transition={{
+								duration: 0.2,
+								ease: "easeOut",
+							}}
+							className="relative"
+						>
+							<div className="flex gap-4 h-full">
+								<ProfileTabsList
+									isLoading={false}
+									activeTab={activeTab}
+									onTabChange={handleTabChange}
+									profileOrder={profileOrder}
+									onDragEnd={handleDragEnd}
 								/>
-							)}
-							{step === 1 && (
-								<motion.div
-									key="profile"
-									initial={{ x: step !== 1 ? "-125%" : 0 }}
-									animate={{ x: 0 }}
-									transition={{
-										duration: 0.2,
-										ease: "easeOut",
-									}}
-									className="relative"
-								>
-									<div className="flex gap-4 h-full">
-										<ProfileTabsList
-											isLoading={false}
-											activeTab={activeTab}
-											onTabChange={handleTabChange}
-											profileOrder={profileOrder}
-											onDragEnd={handleDragEnd}
+								<Separator orientation="vertical" />
+								<div className="flex-1 px-4 relative">
+									{activeTab === "general" && (
+										<GeneralTab
+											onSubmit={onGeneralSubmit}
+											isSubmitting={isSubmitting}
+											defaultValues={generalFormData}
+											userImage={profile.image ?? undefined}
+											userName={profile.name ?? undefined}
 										/>
-										<Separator orientation="vertical" />
-										<div className="flex-1 px-4 relative">
-											{activeTab === "general" && (
-												<GeneralTab
-													onSubmit={onGeneralSubmit}
-													isSubmitting={isSubmitting}
-													defaultValues={generalFormData}
-													userImage={session?.user.image ?? undefined}
-													userName={session?.user.name ?? undefined}
-												/>
-											)}
-											{activeTab === "experience" && <ExperienceTab />}
-											{activeTab === "education" && (
-												<EducationTab
-													education={education}
-													showEducationForm={showEducationForm}
-													onShowEducationForm={setShowEducationForm}
-													onSubmit={onEducationSubmit}
-													isSubmitting={isSubmitting}
-													onEducationUpdate={setEducation}
-												/>
-											)}
-											{activeTab === "projects" && (
-												<ProjectsTab
-													projects={projects}
-													showProjectForm={showProjectForm}
-													onShowProjectForm={setShowProjectForm}
-													onSubmit={onProjectSubmit}
-													isSubmitting={isSubmitting}
-												/>
-											)}
-											{activeTab === "contacts" && (
-												<ContactsTab
-													contacts={contacts}
-													showContactForm={showContactForm}
-													onShowContactForm={setShowContactForm}
-													onSubmit={onContactSubmit}
-													isSubmitting={isSubmitting}
-													onContactsUpdate={setContacts}
-												/>
-											)}
-											{activeTab === "domains" && <DomainsTab />}
-											{activeTab === "integrations" && <IntegrationsTab />}
-											{activeTab === "export" && <ExportTab />}
-										</div>
-									</div>
-									<div className="flex justify-end space-x-2 pt-8 absolute right-0 -bottom-1">
-										<Button
-											size="sm"
-											type="submit"
-											variant="secondary"
-											onClick={handleSaveChanges}
-											disabled={isSubmitting}
-										>
-											{isSubmitting ? (
-												<>
-													<Loader className="size-3.5 animate-spin" />
-													Saving...
-												</>
-											) : (
-												"Save Changes"
-											)}
-										</Button>
-									</div>
-								</motion.div>
-							)}
-						</>
+									)}
+									{activeTab === "experience" && <ExperienceTab />}
+									{activeTab === "education" && (
+										<EducationTab
+											education={education}
+											showEducationForm={showEducationForm}
+											onShowEducationForm={setShowEducationForm}
+											onSubmit={onEducationSubmit}
+											isSubmitting={isSubmitting}
+											onEducationUpdate={setEducation}
+										/>
+									)}
+									{activeTab === "projects" && (
+										<ProjectsTab
+											projects={projects}
+											showProjectForm={showProjectForm}
+											onShowProjectForm={setShowProjectForm}
+											onSubmit={onProjectSubmit}
+											isSubmitting={isSubmitting}
+										/>
+									)}
+									{activeTab === "contacts" && (
+										<ContactsTab
+											contacts={contacts}
+											showContactForm={showContactForm}
+											onShowContactForm={setShowContactForm}
+											onSubmit={onContactSubmit}
+											isSubmitting={isSubmitting}
+											onContactsUpdate={setContacts}
+										/>
+									)}
+									{activeTab === "domains" && (
+										<DomainsTab
+											username={username ?? ""}
+											profilePreferences={profilePreferences}
+											onSubmit={onProfilePreferencesSubmit}
+											isSubmitting={isSubmitting}
+											onProfilePreferencesUpdate={setProfilePreferences}
+										/>
+									)}
+									{activeTab === "integrations" && <IntegrationsTab />}
+									{activeTab === "export" && <ExportTab />}
+								</div>
+							</div>
+							<div className="flex justify-end space-x-2 pt-8 absolute right-0 -bottom-1">
+								<Button
+									size="sm"
+									type="submit"
+									variant="secondary"
+									onClick={handleSaveChanges}
+									disabled={isSubmitting}
+								>
+									{isSubmitting ? (
+										<>
+											<Loader className="size-3.5 animate-spin" />
+											Saving...
+										</>
+									) : (
+										"Save Changes"
+									)}
+								</Button>
+							</div>
+						</motion.div>
 					)}
 				</AnimatePresence>
 			</DialogContent>

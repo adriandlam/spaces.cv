@@ -4,6 +4,7 @@ import type {
   Education,
   Project,
   WorkExperience,
+  ProfilePreferences,
 } from "@/app/generated/prisma";
 import type {
   contactFormSchema,
@@ -12,6 +13,9 @@ import type {
   profileFormSchema,
   projectFormSchema,
 } from "@/lib/validations/profile";
+import type { auth } from "@/lib/auth";
+
+export type SessionUser = Awaited<ReturnType<typeof auth.api.getSession>>;
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>;
 export type GeneralFormData = z.infer<typeof generalFormSchema>;
@@ -51,4 +55,5 @@ export interface ProfileModalData {
   workExperiences: WorkExperience[];
   profileOrder: string[];
   contacts: Contact[];
+  profilePreferences: ProfilePreferences;
 }

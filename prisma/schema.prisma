@@ -25,6 +25,17 @@ enum ContactType {
   LINK
 }
 
+enum FontFamily {
+  SANS
+  SERIF
+  MONO
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
+
 model User {
   id            String    @id
   name          String
@@ -48,10 +59,11 @@ model User {
   website  String? // Website URL
 
   // Relations
-  projects        Project[]
-  education       Education[]
-  workExperiences WorkExperience[]
-  contacts        Contact[]
+  projects           Project[]
+  education          Education[]
+  workExperiences    WorkExperience[]
+  contacts           Contact[]
+  profilePreferences ProfilePreferences?
 
   profileOrder String[] @default(["experience", "education", "projects", "contacts"])
 
@@ -183,4 +195,23 @@ model Contact {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("contact")
+}
+
+model ProfilePreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Visibility & Publishing
+  hidden         Boolean @default(false)
+  googleIndexing Boolean @default(true)
+
+  // Appearance
+  fontFamily FontFamily @default(SANS)
+  theme      Theme      @default(DARK)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profile_preferences")
 }

@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
 import { educationSchema } from "@/lib/validations/profile";
 import type { EducationFormData } from "@/types/profile";
@@ -158,7 +157,7 @@ export default function EducationTab({
 								<div
 									key={edu.id}
 									className={cn(
-										"flex items-start gap-4",
+										"flex items-start gap-4 transition-all duration-200 ease-out",
 										edu.hidden && "opacity-50",
 									)}
 								>

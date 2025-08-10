@@ -126,6 +126,7 @@ export async function GET(req: NextRequest) {
             orderBy: { createdAt: "asc" },
           },
           customStatus: true,
+          profilePreferences: true,
         },
       })) as ProfileModalData;
 

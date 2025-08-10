@@ -92,21 +92,13 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
         contacts: {
           orderBy: { createdAt: "asc" },
         },
+        profilePreferences: true,
       },
     });
 
-    if (!data) return null;
+    if (!data || !data.profilePreferences) return null;
 
-    // Ensure profileOrder has a default value if empty
-    const profileOrder =
-      data.profileOrder.length > 0
-        ? data.profileOrder
-        : ["experience", "education", "projects", "contacts"];
-
-    return {
-      ...data,
-      profileOrder,
-    };
+    return data as ProfileModalData;
   } catch (error) {
     console.error("Error fetching profile data:", error);
     return null;

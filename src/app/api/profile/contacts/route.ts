@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { contactSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
 import normalizeUrl from "normalize-url";
+import type { ContactType } from "@/app/generated/prisma";
 
 export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const contact = await prisma.contact.create({
       data: {
-        type,
+        type: type as ContactType,
         href: hrefValue,
         value: displayValue,
         userId: session.user.id,
