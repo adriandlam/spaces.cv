@@ -126,7 +126,7 @@ export default function ProfileModalClient({
 
 		if (!over || active.id === over.id) return;
 
-		const currentOrder = userSectionOrder;
+		const currentOrder = sectionOrder;
 
 		const oldIndex = currentOrder.indexOf(active.id as string);
 		const newIndex = currentOrder.indexOf(over.id as string);
