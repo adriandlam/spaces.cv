@@ -131,7 +131,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<RouteParams> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
