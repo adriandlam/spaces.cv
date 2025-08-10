@@ -126,7 +126,7 @@ export const getContactIcon = (type: Contact["type"]) => {
 			return <Globe className="size-4 opacity-75" />;
 		case "LINK":
 			return <Link2 className="size-4 opacity-75" />;
-		case "TWITTER":
+		case "X":
 			return <TwitterIcon className="size-4 opacity-75" />;
 		case "LINKEDIN":
 			return <LinkedinIcon className="size-4 opacity-75" />;

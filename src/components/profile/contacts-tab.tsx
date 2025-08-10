@@ -2,17 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-	Eye,
-	EyeOff,
-	Globe,
-	Link2,
-	Mail,
-	Pencil,
-	Phone,
-	Plus,
-	Trash,
-} from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
 import { useForm } from "react-hook-form";
@@ -37,18 +27,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
 import { contactSchema } from "@/lib/validations/profile";
 import type { ContactFormData } from "@/types/profile";
-import {
-	DiscordIcon,
-	ExternalArrow,
-	GitHubIcon,
-	getContactIcon,
-	LinkedinIcon,
-	TwitterIcon,
-} from "../icons";
+import { ExternalArrow, getContactIcon } from "../icons";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface ContactsTabProps {
@@ -354,20 +336,6 @@ export default function ContactsTab({
 															)}
 														</SelectContent>
 													</Select>
-													{/* <select
-														value={field.value}
-														onChange={field.onChange}
-														className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-													>
-														{Object.entries(contactTypeLabels).map(
-															([value, label]) => (
-																<option key={value} value={value}>
-																	{getContactIcon(value as Contact["type"])}{" "}
-																	{label}
-																</option>
-															),
-														)}
-													</select> */}
 												</FormControl>
 												<FormMessage />
 											</FormItem>
