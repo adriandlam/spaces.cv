@@ -24,10 +24,18 @@ export const projectSchema = z.object({
 		.string()
 		.min(1, "Project title is required")
 		.max(100, "Title must be less than 100 characters"),
-	year: z
+	from: z
 		.string()
-		.min(1, "Year is required")
+		.min(1, "Start date is required")
 		.regex(/^\d{4}$/, "Please enter a valid 4-digit year"),
+	to: z
+		.string()
+		.regex(
+			/^(\d{4}|Present)$/,
+			"Please enter a valid 4-digit year or 'Present'",
+		)
+		.optional()
+		.or(z.literal("")),
 	description: z
 		.string()
 		.min(1, "Description is required")
@@ -139,11 +147,6 @@ export const educationSchema = z.object({
 		.max(500, "Description must be less than 500 characters")
 		.optional()
 		.or(z.literal("")),
-	classmates: z
-		.string()
-		.max(200, "Classmates must be less than 200 characters")
-		.optional()
-		.or(z.literal("")),
 	fieldOfStudy: z
 		.string()
 		.max(100, "Field of study must be less than 100 characters")
@@ -163,6 +166,44 @@ export const educationSchema = z.object({
 		.or(z.literal("")),
 });
 
+export const experienceSchema = z.object({
+	title: z
+		.string()
+		.min(1, "Job title is required")
+		.max(100, "Title must be less than 100 characters"),
+	company: z
+		.string()
+		.min(1, "Company is required")
+		.max(100, "Company name must be less than 100 characters"),
+	from: z
+		.string()
+		.min(1, "Start date is required")
+		.regex(/^\d{4}$/, "Please enter a valid 4-digit year"),
+	to: z
+		.string()
+		.regex(
+			/^(\d{4}|Present)$/,
+			"Please enter a valid 4-digit year or 'Present'",
+		)
+		.optional()
+		.or(z.literal("")),
+	location: z
+		.string()
+		.max(100, "Location must be less than 100 characters")
+		.optional()
+		.or(z.literal("")),
+	description: z
+		.string()
+		.max(500, "Description must be less than 500 characters")
+		.optional()
+		.or(z.literal("")),
+	skills: z
+		.string()
+		.max(200, "Skills must be less than 200 characters")
+		.optional()
+		.or(z.literal("")),
+});
+
 export const contactSchema = z.object({
 	type: ContactType,
 	value: z
@@ -176,4 +217,5 @@ export const profileFormSchema = profileSchema;
 export const projectFormSchema = projectSchema;
 export const generalFormSchema = generalSchema;
 export const educationFormSchema = educationSchema;
+export const experienceFormSchema = experienceSchema;
 export const contactFormSchema = contactSchema;

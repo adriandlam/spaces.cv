@@ -362,18 +362,6 @@ export default function ContactsTab({
 											</FormItem>
 										)}
 									/>
-
-									<div className="flex justify-end col-span-2">
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={handleCancel}
-											disabled={isSubmitting}
-										>
-											Cancel
-										</Button>
-									</div>
 								</form>
 							</Form>
 						</motion.div>

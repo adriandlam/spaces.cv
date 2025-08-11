@@ -52,7 +52,6 @@ export default function EducationTab({
 			location: "",
 			url: "",
 			description: "",
-			classmates: "",
 			fieldOfStudy: "",
 			gpa: "",
 			activities: "",
@@ -428,36 +427,6 @@ export default function EducationTab({
 											</FormItem>
 										)}
 									/>
-
-									<FormField
-										control={educationForm.control}
-										name="classmates"
-										render={({ field, fieldState }) => (
-											<FormItem>
-												<Label className="text-sm">Classmates</Label>
-												<FormControl>
-													<Input
-														{...field}
-														placeholder="John Doe, Jane Smith"
-														className={fieldState.error ? "border-red-500" : ""}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<div className="flex justify-end">
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={handleCancel}
-											disabled={isSubmitting}
-										>
-											Cancel
-										</Button>
-									</div>
 								</form>
 							</Form>
 						</motion.div>

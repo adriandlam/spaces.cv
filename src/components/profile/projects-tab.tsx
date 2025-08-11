@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash } from "lucide-react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import type { Project } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { projectSchema } from "@/lib/validations/profile";
 import type { ProjectFormData } from "@/types/profile";
+import { ExternalArrow } from "../icons";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface ProjectsTabProps {
 	projects: Project[];
@@ -26,6 +30,7 @@ interface ProjectsTabProps {
 	onShowProjectForm: (show: boolean) => void;
 	onSubmit: (data: ProjectFormData) => Promise<void>;
 	isSubmitting: boolean;
+	onProjectUpdate?: (projects: Project[]) => void;
 }
 
 export default function ProjectsTab({
@@ -34,13 +39,15 @@ export default function ProjectsTab({
 	onShowProjectForm,
 	onSubmit,
 	isSubmitting,
+	onProjectUpdate,
 }: ProjectsTabProps) {
 	const projectForm = useForm<ProjectFormData>({
 		resolver: zodResolver(projectSchema),
 		mode: "onChange",
 		defaultValues: {
 			title: "",
-			year: "",
+			from: "",
+			to: "",
 			description: "",
 			company: "",
 			link: "",
@@ -53,10 +60,79 @@ export default function ProjectsTab({
 		projectForm.reset();
 	};
 
+	const hideProject = async (id: string) => {
+		const proj = projects.find((p) => p.id === id);
+		if (!proj) return;
+
+		try {
+			const updatedProjects = projects.map((p) =>
+				p.id === id ? { ...p, hidden: !p.hidden } : p,
+			);
+
+			// Update parent state
+			if (onProjectUpdate) {
+				onProjectUpdate(updatedProjects);
+			}
+
+			const response = await fetch("/api/me/profile/projects", {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					id,
+					hidden: !proj.hidden,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update project visibility");
+			}
+		} catch (_) {
+			// Revert on error and revalidate
+			if (onProjectUpdate) {
+				onProjectUpdate(projects);
+			}
+		}
+	};
+
+	const deleteProject = async (id: string) => {
+		try {
+			const updatedProjects = projects.filter((p) => p.id !== id);
+
+			// Update parent state
+			if (onProjectUpdate) {
+				onProjectUpdate(updatedProjects);
+			}
+
+			const response = await fetch("/api/me/profile/projects", {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ id }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete project");
+			}
+		} catch (_) {
+			// Revert on error and revalidate
+			if (onProjectUpdate) {
+				onProjectUpdate(projects);
+			}
+		}
+	};
+
 	return (
-		<div className="space-y-7">
+		<div>
 			<div className="flex justify-between items-center mb-1">
-				<h3 className="text-xl">Projects</h3>
+				<div>
+					<h3 className="text-xl">Projects</h3>
+					<p className="text-sm text-muted-foreground">
+						Add any info about your projects
+					</p>
+				</div>
 				<Button
 					variant="ghost"
 					size="sm"
@@ -67,67 +143,112 @@ export default function ProjectsTab({
 					Add Project
 				</Button>
 			</div>
-			<Separator />
 
 			{/* Display existing projects */}
-			{projects.length > 0 && (
-				<div className="space-y-3">
-					{projects.map((project) => (
-						<div key={project.id} className="border rounded-lg p-4 space-y-2">
-							<div className="flex justify-between items-start">
-								<h4 className="font-medium">{project.title}</h4>
-								<span className="text-sm text-muted-foreground">
-									{project.year}
-								</span>
-							</div>
-							<p className="text-sm text-muted-foreground">
-								{project.description}
-							</p>
-							{project.company && (
-								<p className="text-xs text-muted-foreground">
-									Company: {project.company}
-								</p>
-							)}
-							{project.link && (
-								<a
-									href={project.link}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-xs text-blue-600 hover:underline"
+			<ScrollArea className="h-[65dvh] mt-8">
+				{projects.length > 0 && (
+					<div className="space-y-3">
+						{projects.map((project) => (
+							<>
+								<div
+									key={project.id}
+									className={cn(
+										"flex items-start gap-4 transition-all duration-200 ease-out",
+										project.hidden && "opacity-50",
+									)}
 								>
-									View Project
-								</a>
-							)}
-							{project.collaborators && (
-								<p className="text-xs text-muted-foreground">
-									Collaborators: {project.collaborators}
-								</p>
-							)}
-						</div>
-					))}
-				</div>
-			)}
+									<div className="w-40">
+										<span className="text-muted-foreground text-sm opacity-75 mt-1">
+											{project.from} — {project.to || "Present"}
+										</span>
+										<div className="text-muted-foreground opacity-75 text-sm">
+											{project.company}
+										</div>
+									</div>
+									<div className="flex items-center justify-between w-full">
+										<div className="flex flex-col">
+											<button
+												type="button"
+												className={cn(
+													"hover:underline underline-offset-3 transition-all duration-200 ease-out",
+													project.hidden && "opacity-50",
+												)}
+											>
+												<Link
+													href={project.link || ""}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="flex items-start"
+												>
+													{project.title}
+													<ExternalArrow className="size-3 ml-0.5 mt-1" />
+												</Link>
+											</button>
+											<p className="text-muted-foreground opacity-75 text-sm mt-2">
+												{project.description}
+											</p>
+										</div>
+										<div className="flex items-center gap-5">
+											<button
+												type="button"
+												className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100"
+											>
+												<Pencil className="size-3" />
+												Edit
+											</button>
+											<button
+												type="button"
+												className="flex items-center gap-1.5 cursor-pointer text-[13px] opacity-50 hover:opacity-100 transition ease-out duration-100"
+												onClick={() => hideProject(project.id)}
+											>
+												{project.hidden ? (
+													<>
+														<Eye className="size-3" />
+														Show
+													</>
+												) : (
+													<>
+														<EyeOff className="size-3" />
+														Hide
+													</>
+												)}
+											</button>
+											<button
+												type="button"
+												className="flex items-center gap-1 cursor-pointer text-[13px] opacity-50 hover:opacity-100 hover:text-destructive transition ease-out duration-100"
+												onClick={() => deleteProject(project.id)}
+											>
+												<Trash className="size-3" />
+												Delete
+											</button>
+										</div>
+									</div>
+								</div>
+								<Separator className="my-5" />
+							</>
+						))}
+					</div>
+				)}
 
-			<AnimatePresence>
-				{showProjectForm && (
-					<motion.div
-						key="project-form"
-						initial={{ opacity: 0, y: -10 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -10 }}
-						transition={{
-							duration: 0.2,
-							ease: "easeOut",
-						}}
-						className="space-y-4"
-					>
-						<Form {...projectForm}>
-							<form
-								id="project-form"
-								onSubmit={projectForm.handleSubmit(onSubmit)}
-								className="space-y-3"
-							>
-								<div className="grid grid-cols-2 gap-3">
+				<AnimatePresence>
+					{showProjectForm && (
+						<motion.div
+							key="project-form"
+							initial={{ opacity: 0, y: 5, filter: "blur(8px)" }}
+							animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, y: 5, filter: "blur(8px)" }}
+							transition={{
+								duration: 0.2,
+								ease: "easeOut",
+							}}
+							className="space-y-4"
+						>
+							<Form {...projectForm}>
+								<form
+									id="project-form"
+									onSubmit={projectForm.handleSubmit(onSubmit)}
+									className="space-y-3"
+								>
 									<FormField
 										control={projectForm.control}
 										name="title"
@@ -145,16 +266,120 @@ export default function ProjectsTab({
 											</FormItem>
 										)}
 									/>
+
+									<div className="grid grid-cols-2 gap-3">
+										<FormField
+											control={projectForm.control}
+											name="from"
+											render={({ field, fieldState }) => (
+												<FormItem>
+													<Label className="text-sm">From*</Label>
+													<FormControl>
+														<Input
+															{...field}
+															placeholder={new Date().getFullYear().toString()}
+															className={
+																fieldState.error ? "border-red-500" : ""
+															}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={projectForm.control}
+											name="to"
+											render={({ field, fieldState }) => (
+												<FormItem>
+													<Label className="text-sm">To</Label>
+													<FormControl>
+														<Input
+															{...field}
+															placeholder={new Date().getFullYear().toString()}
+															className={
+																fieldState.error ? "border-red-500" : ""
+															}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
 									<FormField
 										control={projectForm.control}
-										name="year"
+										name="description"
 										render={({ field, fieldState }) => (
 											<FormItem>
-												<Label className="text-sm">Year*</Label>
+												<Label className="text-sm">Description*</Label>
+												<FormControl>
+													<Textarea
+														{...field}
+														placeholder="A brief description of your project..."
+														className={`resize-none ${
+															fieldState.error ? "border-red-500" : ""
+														}`}
+														rows={3}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<div className="grid grid-cols-2 gap-3">
+										<FormField
+											control={projectForm.control}
+											name="company"
+											render={({ field, fieldState }) => (
+												<FormItem>
+													<Label className="text-sm">Company</Label>
+													<FormControl>
+														<Input
+															{...field}
+															placeholder="Company name"
+															className={
+																fieldState.error ? "border-red-500" : ""
+															}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={projectForm.control}
+											name="link"
+											render={({ field, fieldState }) => (
+												<FormItem>
+													<Label className="text-sm">Link</Label>
+													<FormControl>
+														<Input
+															{...field}
+															placeholder="https://example.com"
+															className={
+																fieldState.error ? "border-red-500" : ""
+															}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<FormField
+										control={projectForm.control}
+										name="collaborators"
+										render={({ field, fieldState }) => (
+											<FormItem>
+												<Label className="text-sm">Collaborators</Label>
 												<FormControl>
 													<Input
 														{...field}
-														placeholder="2024"
+														placeholder="John Doe, Jane Smith"
 														className={fieldState.error ? "border-red-500" : ""}
 													/>
 												</FormControl>
@@ -162,100 +387,12 @@ export default function ProjectsTab({
 											</FormItem>
 										)}
 									/>
-								</div>
-
-								<FormField
-									control={projectForm.control}
-									name="description"
-									render={({ field, fieldState }) => (
-										<FormItem>
-											<Label className="text-sm">Description*</Label>
-											<FormControl>
-												<Textarea
-													{...field}
-													placeholder="A brief description of your project..."
-													className={`resize-none ${
-														fieldState.error ? "border-red-500" : ""
-													}`}
-													rows={3}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<div className="grid grid-cols-2 gap-3">
-									<FormField
-										control={projectForm.control}
-										name="company"
-										render={({ field, fieldState }) => (
-											<FormItem>
-												<Label className="text-sm">Company</Label>
-												<FormControl>
-													<Input
-														{...field}
-														placeholder="Company name"
-														className={fieldState.error ? "border-red-500" : ""}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={projectForm.control}
-										name="link"
-										render={({ field, fieldState }) => (
-											<FormItem>
-												<Label className="text-sm">Link</Label>
-												<FormControl>
-													<Input
-														{...field}
-														placeholder="https://example.com"
-														className={fieldState.error ? "border-red-500" : ""}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-
-								<FormField
-									control={projectForm.control}
-									name="collaborators"
-									render={({ field, fieldState }) => (
-										<FormItem>
-											<Label className="text-sm">Collaborators</Label>
-											<FormControl>
-												<Input
-													{...field}
-													placeholder="John Doe, Jane Smith"
-													className={fieldState.error ? "border-red-500" : ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<div className="flex justify-end">
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={handleCancel}
-										disabled={isSubmitting}
-									>
-										Cancel
-									</Button>
-								</div>
-							</form>
-						</Form>
-					</motion.div>
-				)}
-			</AnimatePresence>
+								</form>
+							</Form>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</ScrollArea>
 		</div>
 	);
 }

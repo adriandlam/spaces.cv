@@ -45,6 +45,7 @@ export default function Nav() {
 		router.push("/search");
 	});
 
+	// TODO: also include not found page
 	if (pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)) {
 		return null;
 	}

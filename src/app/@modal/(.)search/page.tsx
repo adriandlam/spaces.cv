@@ -1,7 +1,7 @@
 "use client";
 
+import { ExternalArrow } from "@/components/icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
 	Command,
 	CommandDialog,
@@ -14,17 +14,30 @@ import {
 	CommandShortcut,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import { fetcher } from "@/lib/utils";
-import { PublicProfile } from "@/types/profile";
-import { CornerDownLeft, Loader, User } from "lucide-react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn, fetcher, debounce } from "@/lib/utils";
+import type { PublicProfile } from "@/types/profile";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, CornerDownLeft, Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import useSWR from "swr";
 
 export default function SearchModal() {
 	const [open, setOpen] = useState(true);
 	const [showLoading, setShowLoading] = useState(false);
+	const [aiMode, setAiMode] = useState(false);
+	const [pages, setPages] = useState<string[]>([]);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [searchResults, setSearchResults] = useState<PublicProfile[]>([]);
+	const [isSearching, setIsSearching] = useState(false);
+	const page = pages[pages.length - 1];
 
 	const router = useRouter();
 
@@ -45,7 +58,101 @@ export default function SearchModal() {
 		}
 	}, [isLoadingRecentProfiles]);
 
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	useHotkeys(
+		"*",
+		(e) => {
+			if (/^[a-zA-Z0-9]+$/.test(e.key)) {
+				inputRef.current?.focus();
+			}
+		},
+		{
+			enableOnFormTags: true,
+		},
+	);
+
+	useHotkeys(
+		"backspace",
+		() => {
+			if (searchQuery.length === 0) {
+				if (pages.length > 0) {
+					setPages((pages) => pages.slice(0, -1));
+				} else {
+					setAiMode(false);
+				}
+			}
+			inputRef.current?.focus();
+		},
+		{
+			enableOnFormTags: true,
+		},
+	);
+
+	useHotkeys(
+		"esc",
+		() => {
+			if (pages.length > 0) {
+				setPages((pages) => pages.slice(0, -1));
+			} else {
+				setAiMode(false);
+			}
+		},
+		{
+			enableOnFormTags: true,
+		},
+	);
+
+	useHotkeys(
+		"tab",
+		() => {
+			setAiMode(true);
+		},
+		{
+			preventDefault: true,
+			enableOnFormTags: true,
+		},
+	);
+
 	const profilesData = data?.users || [];
+
+	// Debounced search function
+	const debouncedSearch = useCallback(
+		debounce(async (query: string) => {
+			if (!query.trim()) {
+				setSearchResults([]);
+				setIsSearching(false);
+				return;
+			}
+
+			setIsSearching(true);
+			try {
+				const response = await fetch(
+					`/api/search?q=${encodeURIComponent(query)}`,
+				);
+				const data = await response.json();
+				setSearchResults(data.users || []);
+			} catch (error) {
+				setSearchResults([]);
+			} finally {
+				setIsSearching(false);
+			}
+		}, 300),
+		[],
+	);
+
+	// Trigger search when query changes
+	useEffect(() => {
+		debouncedSearch(searchQuery);
+	}, [searchQuery, debouncedSearch]);
+
+	// Clear search when switching modes
+	useEffect(() => {
+		if (aiMode) {
+			setSearchQuery("");
+			setSearchResults([]);
+		}
+	}, [aiMode]);
 
 	// const onSubmit = async (data: EmailFormData) => {
 	// 	setIsSubmitting(true);
@@ -76,15 +183,7 @@ export default function SearchModal() {
 	// 	}
 	// };
 
-	// const resetForm = () => {
-	// 	reset();
-	// 	setStep(0);
-	// 	setSubmitError(null);
-	// 	setIsSubmitting(false);
-	// };
-
 	const handleClose = () => {
-		console.log("close");
 		setOpen(false);
 		router.back();
 	};
@@ -98,58 +197,262 @@ export default function SearchModal() {
 					handleClose();
 				}
 			}}
-			className="!max-w-screen-xs"
+			className={cn("!max-w-screen-xs", aiMode && "!max-w-screen-sm")}
 		>
-			<CommandInput placeholder="Search for a person..." />
+			<div className="relative">
+				<AnimatePresence>
+					{aiMode && (
+						<motion.button
+							initial={{ opacity: 0, x: -20, filter: "blur(5px)" }}
+							animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, x: -20, filter: "blur(5px)" }}
+							transition={{ duration: 0.2, ease: "easeOut" }}
+							type="button"
+							className="absolute top-3.5 left-2.5 flex items-center justify-center rounded h-5 w-5 transition-colors duration-200 ease-out bg-accent/50 hover:bg-accent"
+							onClick={() => {
+								setAiMode(false);
+							}}
+						>
+							<ChevronLeft className="size-3 text-muted-foreground" />
+						</motion.button>
+					)}
+				</AnimatePresence>
+				<CommandInput
+					placeholder={
+						aiMode ? "Describe a person..." : "Search for a person..."
+					}
+					ref={inputRef}
+					value={searchQuery}
+					onValueChange={setSearchQuery}
+					onFocus={() => {
+						inputRef.current?.focus();
+					}}
+					className={cn(aiMode && "!pl-6")}
+					hideIcon={aiMode}
+				/>
+				<AnimatePresence>
+					{!aiMode && (
+						<motion.button
+							initial={{ opacity: 0, x: 20 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: 20 }}
+							transition={{ duration: 0.2, ease: "easeOut" }}
+							onClick={() => {
+								setAiMode(true);
+							}}
+							type="button"
+							className="absolute top-2.5 right-2 flex items-center gap-2 px-1 pr-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out hover:bg-accent"
+						>
+							<CommandShortcut className="border px-1.5 py-0.5 rounded-sm bg-blue-700/50 !border-blue-700 text-foreground">
+								Tab
+							</CommandShortcut>
+							<span className="text-xs">Ask AI</span>
+						</motion.button>
+					)}
+				</AnimatePresence>
+			</div>
 			<CommandList>
-				<CommandEmpty>No results found</CommandEmpty>
-				{/* <CommandGroup heading="Suggestions">
-					<CommandItem>
-						<Calendar />
-						<span>Calendar</span>
-					</CommandItem>
-					<CommandItem>
-						<span>Search Emoji</span>
-					</CommandItem>
-					<CommandItem>
-						<span>Calculator</span>
-					</CommandItem>
-				</CommandGroup> */}
-				<CommandSeparator />
-				{showLoading ? (
+				{!aiMode && searchQuery.trim() && searchResults.length === 0 && (
+					<CommandEmpty>No results found for "{searchQuery}"</CommandEmpty>
+				)}
+
+				{/* Search Results */}
+				{/* {!page && !aiMode && searchQuery.trim() && isSearching && (
 					<div className="flex items-center gap-2 text-xs text-muted-foreground px-2 py-6">
 						<Loader className="size-3 animate-spin" />
-						<span>Loading...</span>
+						<span>Searching...</span>
 					</div>
-				) : profilesData.length > 0 ? (
-					<CommandGroup heading="Recently joined">
-						{profilesData.map((profile) => (
-							<CommandItem key={profile.id} asChild>
-								<Link
-									href={`/profile/${profile.username}`}
-									onClick={() => {
-										setOpen(false);
-									}}
+				)} */}
+
+				{!page &&
+					!aiMode &&
+					searchQuery.trim() &&
+					!isSearching &&
+					searchResults.length > 0 && (
+						<CommandGroup heading={`Search results (${searchResults.length})`}>
+							{searchResults.map((profile) => (
+								<CommandItem
+									key={profile.id}
+									value={`${profile.name} ${profile.username}`}
+									asChild
+									className="group !pr-3"
 								>
-									<div className="flex items-center gap-2">
-										<Avatar>
-											{/* <AvatarImage src={profile.image} /> */}
-											<AvatarFallback className="tracking-wider uppercase">
-												{profile?.name.split(" ").map((name) => name.charAt(0))}
-											</AvatarFallback>
-										</Avatar>
-										<div className="flex flex-col">
-											<span>{profile.name}</span>
-											<p className="text-xs text-muted-foreground">
-												@{profile.username}
-											</p>
+									<Link
+										href={`/profile/${profile.username}`}
+										onClick={() => {
+											setOpen(false);
+										}}
+										className="flex justify-between"
+									>
+										<div className="flex items-center gap-2">
+											<Avatar className="size-9">
+												<AvatarFallback className="tracking-wider uppercase">
+													{profile?.name
+														.split(" ")
+														.map((name) => name.charAt(0))}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex flex-col leading-4">
+												<span>{profile.name}</span>
+												<p className="text-xs text-muted-foreground">
+													@{profile.username}
+												</p>
+											</div>
 										</div>
-									</div>
-								</Link>
+										<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+											<span>Visit</span>
+											<ExternalArrow className="!size-3 !text-foreground" />
+										</div>
+									</Link>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					)}
+
+				{!page && !aiMode && !searchQuery.trim() && (
+					<>
+						{/* <CommandGroup heading="Actions">
+							<CommandItem onSelect={() => setPages([...pages, "projects"])}>
+								<span>Browse projects...</span>
 							</CommandItem>
-						))}
+							<CommandItem onSelect={() => setPages([...pages, "teams"])}>
+								<span>Browse teams...</span>
+							</CommandItem>
+							<CommandItem onSelect={() => setPages([...pages, "settings"])}>
+								<span>Settings...</span>
+							</CommandItem>
+						</CommandGroup> */}
+
+						{showLoading ? (
+							<div className="flex items-center gap-2 text-xs text-muted-foreground px-2 py-6">
+								<Loader className="size-3 animate-spin" />
+								<span>Loading...</span>
+							</div>
+						) : profilesData.length > 0 ? (
+							<CommandGroup heading="Recently joined">
+								{profilesData.map((profile) => (
+									<CommandItem key={profile.id} asChild className="group !pr-3">
+										<Link
+											href={`/profile/${profile.username}`}
+											onClick={() => {
+												setOpen(false);
+											}}
+											className="flex justify-between"
+										>
+											<div className="flex items-center gap-2">
+												<Avatar className="size-9">
+													{/* <AvatarImage src={profile.image} /> */}
+													<AvatarFallback className="tracking-wider uppercase">
+														{profile?.name
+															.split(" ")
+															.map((name) => name.charAt(0))}
+													</AvatarFallback>
+												</Avatar>
+												<div className="flex flex-col leading-4">
+													<span>{profile.name}</span>
+													<p className="text-xs text-muted-foreground">
+														@{profile.username}
+													</p>
+												</div>
+											</div>
+											<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+												<span>Visit</span>
+												<ExternalArrow className="!size-3 !text-foreground" />
+											</div>
+										</Link>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						) : null}
+					</>
+				)}
+
+				{page === "projects" && (
+					<CommandGroup heading="Projects">
+						<CommandItem onSelect={() => console.log("Project A selected")}>
+							<span>Project A</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Project B selected")}>
+							<span>Project B</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => setPages([...pages, "create-project"])}
+						>
+							<span>Create new project...</span>
+						</CommandItem>
 					</CommandGroup>
-				) : null}
+				)}
+
+				{page === "teams" && (
+					<CommandGroup heading="Teams">
+						<CommandItem onSelect={() => console.log("Team 1 selected")}>
+							<span>Team Alpha</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Team 2 selected")}>
+							<span>Team Beta</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => setPages([...pages, "join-team"])}>
+							<span>Join a team...</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
+
+				{page === "settings" && (
+					<CommandGroup heading="Settings">
+						<CommandItem onSelect={() => console.log("Profile settings")}>
+							<span>Profile settings</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Account settings")}>
+							<span>Account settings</span>
+						</CommandItem>
+						<CommandItem onSelect={() => setPages([...pages, "theme"])}>
+							<span>Theme...</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
+
+				{page === "create-project" && (
+					<CommandGroup heading="Create Project">
+						<CommandItem onSelect={() => console.log("Empty project")}>
+							<span>Empty project</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("From template")}>
+							<span>From template</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Import repository")}>
+							<span>Import repository</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
+
+				{page === "join-team" && (
+					<CommandGroup heading="Join Team">
+						<CommandItem onSelect={() => console.log("By invitation")}>
+							<span>By invitation code</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Public teams")}>
+							<span>Browse public teams</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
+
+				{page === "theme" && (
+					<CommandGroup heading="Theme">
+						<CommandItem onSelect={() => console.log("Light theme")}>
+							<span>Light</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Dark theme")}>
+							<span>Dark</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("System theme")}>
+							<span>System</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 			</CommandList>
 			<Separator />
 			<div className="flex justify-between p-1 items-center">

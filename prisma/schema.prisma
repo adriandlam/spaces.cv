@@ -122,7 +122,8 @@ model Verification {
 model Project {
   id            String   @id @default(cuid())
   title         String
-  year          String
+  from          String
+  to            String?
   description   String
   company       String?
   link          String?
@@ -130,6 +131,7 @@ model Project {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   skills        String[] @default([])
+  hidden        Boolean  @default(false)
 
   // Relations
   userId String
@@ -147,7 +149,6 @@ model Education {
   location     String?
   url          String?
   description  String?
-  classmates   String?
   fieldOfStudy String?
   gpa          String?
   activities   String?
@@ -173,6 +174,7 @@ model WorkExperience {
   skills      String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  hidden      Boolean  @default(false)
 
   // Relations
   userId String

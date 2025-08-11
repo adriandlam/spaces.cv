@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
-    const profiles = await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         OR: [
           {
@@ -22,6 +22,9 @@ export async function GET(req: NextRequest) {
           {
             username: { contains: query, mode: "insensitive" },
           },
+          {
+            about: { contains: query, mode: "insensitive" },
+          },
         ],
       },
       select: {
@@ -29,34 +32,11 @@ export async function GET(req: NextRequest) {
         name: true,
         username: true,
         image: true,
-        title: true,
-        about: true,
-        location: true,
-        website: true,
-        projects: {
-          orderBy: { createdAt: "asc" },
-        },
-        education: {
-          where: {
-            hidden: false,
-          },
-          orderBy: { from: "asc" },
-        },
-        workExperiences: {
-          orderBy: { from: "asc" },
-        },
-        profileOrder: true,
-        contacts: {
-          where: {
-            hidden: false,
-          },
-          orderBy: { createdAt: "asc" },
-        },
         customStatus: true,
       },
     });
 
-    return NextResponse.json({ profiles });
+    return NextResponse.json({ users });
   } catch (error) {
     logger.error(
       {

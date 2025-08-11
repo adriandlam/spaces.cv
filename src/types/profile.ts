@@ -10,6 +10,7 @@ import type { auth } from "@/lib/auth";
 import type {
 	contactFormSchema,
 	educationFormSchema,
+	experienceFormSchema,
 	generalFormSchema,
 	profileFormSchema,
 	projectFormSchema,
@@ -21,6 +22,7 @@ export type ProfileFormData = z.infer<typeof profileFormSchema>;
 export type GeneralFormData = z.infer<typeof generalFormSchema>;
 export type ProjectFormData = z.infer<typeof projectFormSchema>;
 export type EducationFormData = z.infer<typeof educationFormSchema>;
+export type ExperienceFormData = z.infer<typeof experienceFormSchema>;
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 
 export interface PublicProfile {

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { projectSchema } from "@/lib/validations/profile";
+import { experienceSchema } from "@/lib/validations/profile";
 import logger from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized project creation attempt");
+      logger.warn({ requestId }, "Unauthorized experience creation attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const validation = projectSchema.safeParse(body);
+    const validation = experienceSchema.safeParse(body);
 
     if (!validation.success) {
       logger.warn(
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
           userId: session.user.id,
           validationErrors: validation.error.issues,
         },
-        "Project validation failed"
+        "Experience validation failed"
       );
 
       return NextResponse.json(
@@ -43,26 +43,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { title, from, to, description, company, link, collaborators } =
-      validation.data;
+    const {
+      title,
+      company,
+      from,
+      to,
+      location,
+      description,
+      skills,
+    } = validation.data;
 
-    const project = await prisma.project.create({
+    // Parse skills from comma-separated string to array
+    const skillsArray = skills
+      ? skills.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    const experience = await prisma.workExperience.create({
       data: {
         title: title.trim(),
+        company: company.trim(),
         from: from.trim(),
         to: to?.trim() || null,
-        description: description.trim(),
-        company: company?.trim() || null,
-        link: link?.trim() || null,
-        collaborators: collaborators?.trim() || null,
+        location: location?.trim() || null,
+        description: description?.trim() || null,
+        skills: skillsArray,
         userId: session.user.id,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Project created successfully",
-      project,
+      message: "Experience created successfully",
+      experience,
     });
   } catch (error) {
     logger.error(
@@ -77,7 +89,7 @@ export async function POST(req: NextRequest) {
               }
             : error,
       },
-      "Project creation failed"
+      "Experience creation failed"
     );
 
     return NextResponse.json(
@@ -96,7 +108,7 @@ export async function PATCH(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized project update attempt");
+      logger.warn({ requestId }, "Unauthorized experience update attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -113,7 +125,7 @@ export async function PATCH(req: NextRequest) {
           userId: session.user.id,
           body,
         },
-        "Invalid project update data"
+        "Invalid experience update data"
       );
 
       return NextResponse.json(
@@ -122,7 +134,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const project = await prisma.project.update({
+    const experience = await prisma.workExperience.update({
       where: {
         id,
         userId: session.user.id,
@@ -134,8 +146,8 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Project updated successfully",
-      project,
+      message: "Experience updated successfully",
+      experience,
     });
   } catch (error) {
     logger.error(
@@ -150,7 +162,7 @@ export async function PATCH(req: NextRequest) {
               }
             : error,
       },
-      "Project update failed"
+      "Experience update failed"
     );
 
     return NextResponse.json(
@@ -169,7 +181,7 @@ export async function DELETE(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized project delete attempt");
+      logger.warn({ requestId }, "Unauthorized experience delete attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -186,7 +198,7 @@ export async function DELETE(req: NextRequest) {
           userId: session.user.id,
           body,
         },
-        "Invalid project delete data"
+        "Invalid experience delete data"
       );
 
       return NextResponse.json(
@@ -195,7 +207,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await prisma.project.delete({
+    await prisma.workExperience.delete({
       where: {
         id,
         userId: session.user.id,
@@ -204,7 +216,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Project deleted successfully",
+      message: "Experience deleted successfully",
     });
   } catch (error) {
     logger.error(
@@ -219,7 +231,7 @@ export async function DELETE(req: NextRequest) {
               }
             : error,
       },
-      "Project delete failed"
+      "Experience delete failed"
     );
 
     return NextResponse.json(
@@ -238,24 +250,25 @@ export async function GET(req: NextRequest) {
     });
 
     if (!session) {
-      logger.warn({ requestId }, "Unauthorized projects fetch attempt");
+      logger.warn({ requestId }, "Unauthorized experience fetch attempt");
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const projects = await prisma.project.findMany({
+    const experiences = await prisma.workExperience.findMany({
       where: {
         userId: session.user.id,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        { to: 'asc' }, // Current jobs first (null values)
+        { from: 'desc' }, // Then by start date, most recent first
+      ],
     });
 
     return NextResponse.json({
-      projects,
+      experiences,
     });
   } catch (error) {
     logger.error(
@@ -270,7 +283,7 @@ export async function GET(req: NextRequest) {
               }
             : error,
       },
-      "Projects fetch failed"
+      "Experience fetch failed"
     );
 
     return NextResponse.json(

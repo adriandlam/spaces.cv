@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import type {
 	ContactFormData,
 	EducationFormData,
+	ExperienceFormData,
 	GeneralFormData,
 	ProfileFormData,
 	ProfileModalData,
@@ -68,6 +69,7 @@ export default function ProfileModalClient({
 	});
 	const [projects, setProjects] = useState(initialProjects);
 	const [education, setEducation] = useState(initialEducation);
+	const [workExperiences, setWorkExperiences] = useState(initialWorkExperiences);
 	const [contacts, setContacts] = useState(initialContacts);
 	const [profileOrder, setprofileOrder] = useState(initialprofileOrder);
 	const [profilePreferences, setProfilePreferences] = useState(
@@ -81,6 +83,7 @@ export default function ProfileModalClient({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [showProjectForm, setShowProjectForm] = useState(false);
 	const [showEducationForm, setShowEducationForm] = useState(false);
+	const [showExperienceForm, setShowExperienceForm] = useState(false);
 	const [showContactForm, setShowContactForm] = useState(false);
 	const [generalFormData, setGeneralFormData] = useState<
 		Partial<GeneralFormData>
@@ -94,6 +97,7 @@ export default function ProfileModalClient({
 		setActiveTab(tabId);
 		setShowProjectForm(false);
 		setShowEducationForm(false);
+		setShowExperienceForm(false);
 		setShowContactForm(false);
 		if (tabId === "general") {
 			window.history.pushState(null, "", pathname);
@@ -309,6 +313,30 @@ export default function ProfileModalClient({
 		}
 	};
 
+	const onExperienceSubmit = async (data: ExperienceFormData) => {
+		setIsSubmitting(true);
+		try {
+			const response = await fetch("/api/me/profile/experience", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				throw new Error(result.error || "Failed to save experience");
+			}
+
+			setWorkExperiences(result.experience);
+			setShowExperienceForm(false);
+		} catch (error) {
+			console.error("Error saving experience:", error);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
 	const onContactSubmit = async (data: ContactFormData) => {
 		setIsSubmitting(true);
 		try {
@@ -407,6 +435,7 @@ export default function ProfileModalClient({
 		setIsSubmitting(false);
 		setShowProjectForm(false);
 		setShowEducationForm(false);
+		setShowExperienceForm(false);
 		setShowContactForm(false);
 	};
 
@@ -469,7 +498,16 @@ export default function ProfileModalClient({
 											userName={profile.name ?? undefined}
 										/>
 									)}
-									{activeTab === "experience" && <ExperienceTab />}
+									{activeTab === "experience" && (
+										<ExperienceTab
+											experiences={workExperiences}
+											showExperienceForm={showExperienceForm}
+											onShowExperienceForm={setShowExperienceForm}
+											onSubmit={onExperienceSubmit}
+											isSubmitting={isSubmitting}
+											onExperienceUpdate={setWorkExperiences}
+										/>
+									)}
 									{activeTab === "education" && (
 										<EducationTab
 											education={education}
@@ -512,7 +550,20 @@ export default function ProfileModalClient({
 									{activeTab === "export" && <ExportTab />}
 								</div>
 							</div>
-							<div className="flex justify-end space-x-2 pt-8 absolute right-0 -bottom-1">
+							<div className="flex justify-between gap-0.5 pt-8 absolute right-0 -bottom-1">
+								<Button
+									size="sm"
+									type="button"
+									variant="ghost"
+									onClick={() => {
+										setShowProjectForm(false);
+										setShowContactForm(false);
+										setShowEducationForm(false);
+										setShowExperienceForm(false);
+									}}
+								>
+									Cancel
+								</Button>
 								<Button
 									size="sm"
 									type="submit"

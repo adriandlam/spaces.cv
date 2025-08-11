@@ -79,7 +79,7 @@ export async function PUT(
       );
     }
 
-    const { title, year, description, company, link, collaborators } =
+    const { title, from, to, description, company, link, collaborators } =
       validation.data;
 
     const updatedProject = await prisma.project.update({
@@ -88,7 +88,8 @@ export async function PUT(
       },
       data: {
         title: title.trim(),
-        year,
+        from: from.trim(),
+        to: to?.trim() || null,
         description: description.trim(),
         company: company?.trim() || null,
         link: link?.trim() || null,

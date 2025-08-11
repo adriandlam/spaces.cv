@@ -1,4 +1,4 @@
-import { PrismaClient } from "../src/app/generated/prisma";
+import { PrismaClient, type ContactType } from "../src/app/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,7 @@ async function main() {
       name: "Adrian Lam",
       email: "me@adriandlam.com",
       emailVerified: true,
-      username: "adriandlam",
+      username: "adrianlam",
       onboarded: true,
       title: "Math student at UBC. I like AI, building, and learning.",
       about: `I'm super passionate about building stuff that either solves real problems or helps me learn new concepts (super firm believer in project-based learning).
@@ -25,6 +25,22 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       createdAt: new Date("2025-08-10T09:57:08.355Z"),
       updatedAt: new Date("2025-08-10T09:57:08.355Z"),
       onboardedAt: new Date("2025-08-10T09:57:08.355Z"),
+    },
+  });
+
+  // Create profile preferences
+  await prisma.profilePreferences.upsert({
+    where: { userId: user.id },
+    update: {},
+    create: {
+      id: "cme6k818n0001u24rb60deu30",
+      userId: user.id,
+      hidden: false,
+      googleIndexing: true,
+      fontFamily: "SANS",
+      theme: "DARK",
+      createdAt: new Date("2025-08-11T10:35:27.048Z"),
+      updatedAt: new Date("2025-08-11T10:35:27.048Z"),
     },
   });
 
@@ -74,7 +90,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
             : contact.type === "GITHUB"
             ? "cme53f8na0005u2eme3db22n5"
             : "cme53ffri0007u2emyhx7xajn",
-        type: contact.type as any,
+        type: contact.type as ContactType,
         value: contact.value,
         href: contact.href,
         hidden: contact.hidden,
@@ -106,7 +122,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
     update: {},
     create: {
       id: "ubc-education",
-      degree: "Bachelor of Science, Mathematics",
+      fieldOfStudy: "Mathematics",
+      degree: "Bachelor of Science",
       institution: "University of British Columbia",
       from: "2022",
       to: "2026",
@@ -120,7 +137,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
     {
       id: "spec2mcp",
       title: "Spec2MCP",
-      year: "2025",
+      from: "2025",
+      to: null,
       description:
         "Turn any API docs (OpenAPI) into ready-to-use MCP server schemasno deep technical setup needed. <� Top 3 at YC MCP Hackathon.",
       skills: [
@@ -136,7 +154,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
     {
       id: "merin",
       title: "Merin",
-      year: "2025",
+      from: "2024",
+      to: "2025",
       description:
         "An intelligent email platform reimagined for the AI era, designed to help users process emails faster with AI-powered assistance.",
       skills: ["Next.js", "Supabase", "TypeScript", "TailwindCSS"],
@@ -145,7 +164,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
     {
       id: "obsidian-vercel",
       title: "Obsidian Vercel",
-      year: "2025",
+      from: "2025",
+      to: null,
       description:
         "A tool for Obsidian users to avoid paying for publish/sync and host their notes on Vercel via a CI/CD pipeline.",
       skills: ["Next.js", "TypeScript", "TailwindCSS"],
@@ -153,7 +173,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
     {
       id: "ubc-purity-test",
       title: "UBC Purity Test",
-      year: "2025",
+      from: "2024",
+      to: "2025",
       description:
         "A fun platform that allows UBC students to test their innocence level with custom surveys for different faculties.",
       skills: ["Next.js", "TailwindCSS", "TypeScript", "Supabase"],
@@ -168,7 +189,8 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       create: {
         id: project.id,
         title: project.title,
-        year: project.year,
+        from: project.from,
+        to: project.to,
         description: project.description,
         skills: project.skills,
         collaborators: project.collaborators,
