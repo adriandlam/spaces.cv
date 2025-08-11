@@ -142,8 +142,8 @@ export default function ProfilePage({
 				{profile?.profileOrder.map((section) => {
 					if (section === "general") return null;
 
-					const sectionLength =
-						profile?.[section as keyof PublicProfile]?.length ?? 0;
+					const sectionData = profile?.[section as keyof PublicProfile];
+					const sectionLength = Array.isArray(sectionData) ? sectionData.length : 0;
 
 					if (!sectionLength) return null;
 
