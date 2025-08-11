@@ -110,7 +110,7 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
 					theme: "DARK",
 				},
 			});
-			
+
 			return {
 				...data,
 				profilePreferences,

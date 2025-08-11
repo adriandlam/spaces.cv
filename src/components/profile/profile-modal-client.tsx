@@ -69,7 +69,9 @@ export default function ProfileModalClient({
 	});
 	const [projects, setProjects] = useState(initialProjects);
 	const [education, setEducation] = useState(initialEducation);
-	const [workExperiences, setWorkExperiences] = useState(initialWorkExperiences);
+	const [workExperiences, setWorkExperiences] = useState(
+		initialWorkExperiences,
+	);
 	const [contacts, setContacts] = useState(initialContacts);
 	const [profileOrder, setprofileOrder] = useState(initialprofileOrder);
 	const [profilePreferences, setProfilePreferences] = useState(

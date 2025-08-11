@@ -143,7 +143,9 @@ export default function ProfilePage({
 					if (section === "general") return null;
 
 					const sectionData = profile?.[section as keyof PublicProfile];
-					const sectionLength = Array.isArray(sectionData) ? sectionData.length : 0;
+					const sectionLength = Array.isArray(sectionData)
+						? sectionData.length
+						: 0;
 
 					if (!sectionLength) return null;
 

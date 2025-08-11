@@ -1,10 +1,10 @@
 "use client";
 
+import { X } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
-import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
 	const router = useRouter();
