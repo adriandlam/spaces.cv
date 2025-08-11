@@ -97,7 +97,25 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
 			},
 		});
 
-		if (!data || !data.profilePreferences) return null;
+		if (!data) return null;
+
+		// If user doesn't have profile preferences, create them
+		if (!data.profilePreferences) {
+			const profilePreferences = await prisma.profilePreferences.create({
+				data: {
+					userId: session.user.id,
+					hidden: false,
+					googleIndexing: true,
+					fontFamily: "SANS",
+					theme: "DARK",
+				},
+			});
+			
+			return {
+				...data,
+				profilePreferences,
+			} as ProfileModalData;
+		}
 
 		return data as ProfileModalData;
 	} catch (error) {
