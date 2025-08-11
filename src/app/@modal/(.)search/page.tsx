@@ -272,58 +272,60 @@ export default function SearchModal() {
 						<CommandEmpty>No results found for "{searchQuery}"</CommandEmpty>
 					)}
 
-<AnimatePresence>
-
-				{!page &&
-					!aiMode &&
-					searchQuery.trim() &&
-					!isSearching &&
-					searchResults.length > 0 && (
-						<CommandGroup heading={`Search results (${searchResults.length})`}>
-							{searchResults.map((profile) => (
-								<motion.div
-									initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-									animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-									exit={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-									transition={{ duration: 0.1, ease: "easeOut" }}
-								>
-
-								<CommandItem key={profile.id} asChild className="group !pr-3">
-									<Link
-										href={`/profile/${profile.username}`}
-										onClick={() => {
-											setOpen(false);
-										}}
-										className="flex justify-between"
+				<AnimatePresence>
+					{!page &&
+						!aiMode &&
+						searchQuery.trim() &&
+						!isSearching &&
+						searchResults.length > 0 && (
+							<CommandGroup
+								heading={`Search results (${searchResults.length})`}
+							>
+								{searchResults.map((profile) => (
+									<motion.div
+										initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
+										animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+										exit={{ opacity: 0, y: 10, filter: "blur(5px)" }}
+										transition={{ duration: 0.1, ease: "easeOut" }}
 									>
-										<div className="flex items-center gap-2">
-											<Avatar className="size-9">
-												<AvatarFallback className="tracking-wider uppercase">
-													{profile?.name
-														.split(" ")
-														.map((name) => name.charAt(0))}
-												</AvatarFallback>
-											</Avatar>
-											<div className="flex flex-col leading-4">
-												<span>{profile.name}</span>
-												<p className="text-xs text-muted-foreground">
-													@{profile.username}
-												</p>
-											</div>
-										</div>
-										<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
-											<span>Visit</span>
-											<ExternalArrow className="!size-3 !text-foreground" />
-										</div>
-									</Link>
-								</CommandItem>
-								
-								</motion.div>
-							))}
-						</CommandGroup>
-					)}
-					
-</AnimatePresence>
+										<CommandItem
+											key={profile.id}
+											asChild
+											className="group !pr-3"
+										>
+											<Link
+												href={`/profile/${profile.username}`}
+												onClick={() => {
+													setOpen(false);
+												}}
+												className="flex justify-between"
+											>
+												<div className="flex items-center gap-2">
+													<Avatar className="size-9">
+														<AvatarFallback className="tracking-wider uppercase">
+															{profile?.name
+																.split(" ")
+																.map((name) => name.charAt(0))}
+														</AvatarFallback>
+													</Avatar>
+													<div className="flex flex-col leading-4">
+														<span>{profile.name}</span>
+														<p className="text-xs text-muted-foreground">
+															@{profile.username}
+														</p>
+													</div>
+												</div>
+												<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+													<span>Visit</span>
+													<ExternalArrow className="!size-3 !text-foreground" />
+												</div>
+											</Link>
+										</CommandItem>
+									</motion.div>
+								))}
+							</CommandGroup>
+						)}
+				</AnimatePresence>
 
 				<AnimatePresence>
 					{!page && !aiMode && !searchQuery.trim() && (
