@@ -11,7 +11,10 @@ export default function HomeHeader() {
 
 	const pathname = usePathname();
 
-	if (pathname.includes("/profile/")) {
+	if (
+		pathname.includes("/profile/") ||
+		pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)
+	) {
 		return null;
 	}
 

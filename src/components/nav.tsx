@@ -2,7 +2,8 @@
 
 import { Home, Search, User, UserRound } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useHotkeys } from "react-hotkeys-hook";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -38,6 +39,15 @@ const navItems = [
 export default function Nav() {
 	const pathname = usePathname();
 	const { data: session } = useSession();
+	const router = useRouter();
+
+	useHotkeys("slash", () => {
+		router.push("/search");
+	});
+
+	if (pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)) {
+		return null;
+	}
 
 	return (
 		<nav className="sticky top-0 h-screen border-r px-3 flex justify-center items-center flex-col gap-4 py-4">

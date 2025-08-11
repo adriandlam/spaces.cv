@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { ProfilePreferences } from "@/app/generated/prisma";
 import DomainsTab from "@/components/extras/domains-tab";
 import ExportTab from "@/components/extras/export-tab";
 import IntegrationsTab from "@/components/extras/integrations-tab";
@@ -31,7 +32,6 @@ import type {
 	ProjectFormData,
 	SessionUser,
 } from "@/types/profile";
-import type { ProfilePreferences } from "@/app/generated/prisma";
 
 export default function ProfileModalClient({
 	user,
@@ -85,6 +85,7 @@ export default function ProfileModalClient({
 	const [generalFormData, setGeneralFormData] = useState<
 		Partial<GeneralFormData>
 	>({});
+	// const [originalPath, setOriginalPath] = useState<string | null>(null);
 
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
@@ -121,7 +122,7 @@ export default function ProfileModalClient({
 		setprofileOrder(newOrder);
 
 		try {
-			await fetch("/api/profile/section-order", {
+			await fetch("/api/me/profile/section-order", {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -135,6 +136,15 @@ export default function ProfileModalClient({
 			setprofileOrder(currentOrder);
 		}
 	};
+
+	// useEffect(() => {
+	// 	// Capture the original path when modal first opens
+	// 	// This should be the underlying page URL without the modal route
+	// 	if (!originalPath && pathname) {
+	// 		const basePath = pathname.replace(/\/profile$/, "");
+	// 		setOriginalPath(basePath || "/");
+	// 	}
+	// }, [pathname, originalPath]);
 
 	useEffect(() => {
 		const tabParam = searchParams.get("tab");
@@ -210,7 +220,12 @@ export default function ProfileModalClient({
 	const handleClose = () => {
 		if (user.onboarded) {
 			setIsOpen(false);
-			router.back();
+			// Navigate back to the original path that was captured when modal opened
+			// if (originalPath) {
+			// 	router.push(originalPath);
+			// } else {
+			router.push("/");
+			// }
 		} else {
 			setIsOpen(true);
 		}
@@ -219,7 +234,7 @@ export default function ProfileModalClient({
 	const onProjectSubmit = async (data: ProjectFormData) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/profile/projects", {
+			const response = await fetch("/api/me/profile/projects", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
@@ -247,7 +262,7 @@ export default function ProfileModalClient({
 	const onGeneralSubmit = async (data: GeneralFormData) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/profile/general", {
+			const response = await fetch("/api/me/profile/general", {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
@@ -273,7 +288,7 @@ export default function ProfileModalClient({
 	const onEducationSubmit = async (data: EducationFormData) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/profile/education", {
+			const response = await fetch("/api/me/profile/education", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
@@ -297,7 +312,7 @@ export default function ProfileModalClient({
 	const onContactSubmit = async (data: ContactFormData) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/profile/contacts", {
+			const response = await fetch("/api/me/profile/contacts", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
@@ -321,7 +336,7 @@ export default function ProfileModalClient({
 	const onProfilePreferencesSubmit = async (data: ProfilePreferences) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/profile/profile-preferences", {
+			const response = await fetch("/api/me/profile/profile-preferences", {
 				method: "PUT",
 
 				headers: { "Content-Type": "application/json" },
@@ -417,18 +432,6 @@ export default function ProfileModalClient({
 				showCloseButton={false}
 			>
 				<AnimatePresence mode="wait">
-					{/* {isPending ? (
-						<div
-							key="loading"
-							className="fixed inset-0 flex justify-center items-center h-full gap-2"
-						>
-							<Loader className="size-4 animate-spin text-muted-foreground" />
-							<p className="text-sm text-muted-foreground">
-								Loading profile...
-							</p>
-						</div>
-					) : (
-						<> */}
 					{step === 0 && (
 						<OnboardingStep
 							onSubmit={onSubmit}

@@ -78,7 +78,7 @@ export default function EducationTab({
 				onEducationUpdate(updatedEducation);
 			}
 
-			const response = await fetch("/api/profile/education", {
+			const response = await fetch("/api/me/profile/education", {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -109,7 +109,7 @@ export default function EducationTab({
 				onEducationUpdate(updatedEducation);
 			}
 
-			const response = await fetch("/api/profile/education", {
+			const response = await fetch("/api/me/profile/education", {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",

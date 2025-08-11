@@ -20,7 +20,7 @@ export default async function ProfilePageWrapper({
 			.then((res) => res?.session),
 	]);
 
-	if (!profile) {
+	if (!profile || profile.profilePreferences.hidden) {
 		notFound();
 	}
 

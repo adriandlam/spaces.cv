@@ -147,7 +147,7 @@ export default function ContactsTab({
 				onContactsUpdate(updatedContacts);
 			}
 
-			const response = await fetch("/api/profile/contacts", {
+			const response = await fetch("/api/me/profile/contacts", {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -178,7 +178,7 @@ export default function ContactsTab({
 				onContactsUpdate(updatedContacts);
 			}
 
-			const response = await fetch("/api/profile/contacts", {
+			const response = await fetch("/api/me/profile/contacts", {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",

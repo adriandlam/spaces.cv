@@ -23,7 +23,7 @@ export async function PUT(
         {
           requestId,
           method: "PUT",
-          path: `/api/profile/projects/${id}`,
+          path: `/api/me/profile/projects/${id}`,
         },
         "Unauthorized project update attempt"
       );
@@ -47,7 +47,7 @@ export async function PUT(
         {
           requestId,
           method: "PUT",
-          path: `/api/profile/projects/${id}`,
+          path: `/api/me/profile/projects/${id}`,
         },
         "Project not found or access denied"
       );
@@ -65,7 +65,7 @@ export async function PUT(
         {
           requestId,
           method: "PUT",
-          path: `/api/profile/projects/${id}`,
+          path: `/api/me/profile/projects/${id}`,
         },
         "Project update validation failed"
       );
@@ -100,7 +100,7 @@ export async function PUT(
       {
         requestId,
         method: "PUT",
-        path: `/api/profile/projects/${id}`,
+        path: `/api/me/profile/projects/${id}`,
         duration: Date.now() - startTime,
       },
       "Project updated successfully"
@@ -116,7 +116,7 @@ export async function PUT(
       {
         requestId,
         method: "PUT",
-        path: `/api/profile/projects/${id}`,
+        path: `/api/me/profile/projects/${id}`,
         duration: Date.now() - startTime,
       },
       "Project update failed"
@@ -148,7 +148,7 @@ export async function DELETE(
         {
           requestId,
           method: "DELETE",
-          path: `/api/profile/projects/${id}`,
+          path: `/api/me/profile/projects/${id}`,
         },
         "Unauthorized project deletion attempt"
       );
@@ -171,7 +171,7 @@ export async function DELETE(
         {
           requestId,
           method: "DELETE",
-          path: `/api/profile/projects/${id}`,
+          path: `/api/me/profile/projects/${id}`,
         },
         "Project not found or access denied"
       );
@@ -191,7 +191,7 @@ export async function DELETE(
       {
         requestId,
         method: "DELETE",
-        path: `/api/profile/projects/${id}`,
+        path: `/api/me/profile/projects/${id}`,
         duration: Date.now() - startTime,
       },
       "Project deleted successfully"
@@ -206,7 +206,7 @@ export async function DELETE(
       {
         requestId,
         method: "DELETE",
-        path: `/api/profile/projects/${id}`,
+        path: `/api/me/profile/projects/${id}`,
         duration: Date.now() - startTime,
       },
       "Project deletion failed"

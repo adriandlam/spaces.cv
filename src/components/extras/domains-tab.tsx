@@ -1,9 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Check, Copy, Eye, EyeOff, Loader, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import type { ProfilePreferences } from "@/app/generated/prisma";
+import { FontFamily } from "@/app/generated/prisma";
+import { cn } from "@/lib/utils";
 import { ExternalArrow } from "../icons";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -11,8 +13,6 @@ import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
-import type { ProfilePreferences } from "@/app/generated/prisma";
-import { FontFamily } from "@/app/generated/prisma";
 
 interface DomainsTabProps {
 	profilePreferences: ProfilePreferences;
@@ -50,7 +50,7 @@ export default function DomainsTab({
 
 			onProfilePreferencesUpdate(updatedProfilePreferences);
 
-			const response = await fetch("/api/profile/preferences", {
+			const response = await fetch("/api/me/profile/preferences", {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -79,7 +79,7 @@ export default function DomainsTab({
 
 			onProfilePreferencesUpdate(updatedProfilePreferences);
 
-			const response = await fetch("/api/profile/preferences", {
+			const response = await fetch("/api/me/profile/preferences", {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -108,7 +108,7 @@ export default function DomainsTab({
 
 			onProfilePreferencesUpdate(updatedProfilePreferences);
 
-			const response = await fetch("/api/profile/preferences", {
+			const response = await fetch("/api/me/profile/preferences", {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",

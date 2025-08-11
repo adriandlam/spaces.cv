@@ -13,6 +13,8 @@ import {
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
 import { useState } from "react";
+import { FontFamily } from "@/app/generated/prisma";
+import { cn } from "@/lib/utils";
 import type { PublicProfile } from "@/types/profile";
 import { ExternalArrow, getContactIcon } from "../icons";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -32,7 +34,16 @@ export default function ProfilePage({
 	const [showUsername, setShowUsername] = useState<boolean | null>(null);
 
 	return (
-		<div className="">
+		<div
+			className={cn(
+				profile.profilePreferences.fontFamily === FontFamily.SERIF &&
+					"font-serif",
+				profile.profilePreferences.fontFamily === FontFamily.SANS &&
+					"font-sans",
+				profile.profilePreferences.fontFamily === FontFamily.MONO &&
+					"font-mono",
+			)}
+		>
 			{session?.userId !== profile?.id && <ProfileActions />}
 			<motion.div
 				className="space-y-10"

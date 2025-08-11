@@ -10,137 +10,55 @@ import type { PublicProfile, ProfileModalData } from "@/types/profile";
 
 export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  logger.info(
-    {
-      requestId,
-      method: "GET",
-      path: "/api/profile",
-      userAgent: req.headers.get("user-agent"),
-      ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
-    },
-    "Profile fetch request started"
-  );
 
   let user: PublicProfile | ProfileModalData | null = null;
 
   try {
-    const searchParams = req.nextUrl.searchParams;
-    const username = searchParams.get("username");
+    logger.debug({ requestId, type: "self" }, "Fetching self profile");
 
-    if (username) {
-      // Public profile lookup (no auth)
-      logger.debug(
-        { requestId, username, type: "public" },
-        "Fetching public profile"
-      );
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-      user = (await prisma.user.findUnique({
-        where: {
-          username: username.toLowerCase(),
-        },
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          image: true,
-          title: true,
-          about: true,
-          location: true,
-          website: true,
-          projects: {
-            orderBy: { createdAt: "asc" },
-          },
-          education: {
-            where: {
-              hidden: false,
-            },
-            orderBy: { from: "asc" },
-          },
-          workExperiences: {
-            orderBy: { from: "asc" },
-          },
-          profileOrder: true,
-          contacts: {
-            where: {
-              hidden: false,
-            },
-            orderBy: { createdAt: "asc" },
-          },
-          customStatus: true,
-        },
-      })) as PublicProfile;
-
-      if (user) {
-        // Ensure profileOrder has a default value if empty
-        const profileOrder =
-          user.profileOrder.length > 0
-            ? user.profileOrder
-            : ["experience", "education", "projects", "contacts"];
-
-        user = {
-          ...user,
-          profileOrder,
-        } as PublicProfile;
-      } else {
-        user = null;
-      }
-    } else {
-      logger.debug({ requestId, type: "self" }, "Fetching self profile");
-
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
-
-      if (!session) {
-        logger.warn({ requestId }, "Unauthorized profile access attempt");
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
-      user = (await prisma.user.findUnique({
-        where: {
-          id: session.user.id,
-        },
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          email: true,
-          image: true,
-          title: true,
-          about: true,
-          location: true,
-          website: true,
-          projects: {
-            orderBy: { createdAt: "asc" },
-          },
-          education: {
-            orderBy: { from: "asc" },
-          },
-          workExperiences: {
-            orderBy: { from: "asc" },
-          },
-          profileOrder: true,
-          contacts: {
-            orderBy: { createdAt: "asc" },
-          },
-          customStatus: true,
-          profilePreferences: true,
-        },
-      })) as ProfileModalData;
-
-      // user = selfUser as ProfileModalData | null;
+    if (!session) {
+      logger.warn({ requestId }, "Unauthorized profile access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!user) {
-      logger.warn({ requestId, username }, "Profile not found");
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    user = (await prisma.user.findUnique({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        image: true,
+        title: true,
+        about: true,
+        location: true,
+        website: true,
+        projects: {
+          orderBy: { createdAt: "asc" },
+        },
+        education: {
+          orderBy: { from: "asc" },
+        },
+        workExperiences: {
+          orderBy: { from: "asc" },
+        },
+        profileOrder: true,
+        contacts: {
+          orderBy: { createdAt: "asc" },
+        },
+        customStatus: true,
+        profilePreferences: true,
+      },
+    })) as ProfileModalData;
 
     return NextResponse.json({ user });
   } catch (error) {
-    const duration = Date.now() - startTime;
     logger.error(
       {
         requestId,
@@ -152,7 +70,6 @@ export async function GET(req: NextRequest) {
                 stack: error.stack,
               }
             : error,
-        duration,
       },
       "Profile fetch failed"
     );

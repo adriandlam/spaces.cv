@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -13,15 +14,38 @@ import {
 	CommandShortcut,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import { CornerDownLeft } from "lucide-react";
+import { fetcher } from "@/lib/utils";
+import { PublicProfile } from "@/types/profile";
+import { CornerDownLeft, Loader, User } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useState, useEffect } from "react";
+import useSWR from "swr";
 
 export default function SearchModal() {
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(true);
+	const [showLoading, setShowLoading] = useState(false);
 
 	const router = useRouter();
+
+	const { data, isLoading: isLoadingRecentProfiles } = useSWR<{
+		users: PublicProfile[];
+	}>("/api/profiles", fetcher, {
+		refreshInterval: 30000,
+		revalidateOnFocus: false,
+		dedupingInterval: 10000,
+	});
+
+	useEffect(() => {
+		if (isLoadingRecentProfiles) {
+			const timer = setTimeout(() => setShowLoading(true), 200);
+			return () => clearTimeout(timer);
+		} else {
+			setShowLoading(false);
+		}
+	}, [isLoadingRecentProfiles]);
+
+	const profilesData = data?.users || [];
 
 	// const onSubmit = async (data: EmailFormData) => {
 	// 	setIsSubmitting(true);
@@ -68,7 +92,7 @@ export default function SearchModal() {
 	return (
 		<CommandDialog
 			showCloseButton={false}
-			defaultOpen
+			open={open}
 			onOpenChange={(open) => {
 				if (!open) {
 					handleClose();
@@ -92,45 +116,69 @@ export default function SearchModal() {
 					</CommandItem>
 				</CommandGroup> */}
 				<CommandSeparator />
-				<CommandGroup heading="Recently joined">
-					{/* <CommandItem>
-						<User />
-						<span>Profile</span>
-						<CommandShortcut>⌘P</CommandShortcut>
-					</CommandItem>
-					<CommandItem>
-						<CreditCard />
-						<span>Billing</span>
-						<CommandShortcut>⌘B</CommandShortcut>
-					</CommandItem> */}
-				</CommandGroup>
+				{showLoading ? (
+					<div className="flex items-center gap-2 text-xs text-muted-foreground px-2 py-6">
+						<Loader className="size-3 animate-spin" />
+						<span>Loading...</span>
+					</div>
+				) : profilesData.length > 0 ? (
+					<CommandGroup heading="Recently joined">
+						{profilesData.map((profile) => (
+							<CommandItem key={profile.id} asChild>
+								<Link
+									href={`/profile/${profile.username}`}
+									onClick={() => {
+										setOpen(false);
+									}}
+								>
+									<div className="flex items-center gap-2">
+										<Avatar>
+											{/* <AvatarImage src={profile.image} /> */}
+											<AvatarFallback className="tracking-wider uppercase">
+												{profile?.name.split(" ").map((name) => name.charAt(0))}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex flex-col">
+											<span>{profile.name}</span>
+											<p className="text-xs text-muted-foreground">
+												@{profile.username}
+											</p>
+										</div>
+									</div>
+								</Link>
+							</CommandItem>
+						))}
+					</CommandGroup>
+				) : null}
 			</CommandList>
 			<Separator />
-			<div className="flex justify-between px-2 py-1.5 items-center">
+			<div className="flex justify-between p-1 items-center">
 				<button
 					type="button"
 					onClick={handleClose}
-					className="text-muted-foreground flex items-center gap-1.5 text-xs hover:bg-accent px-2 py-1 rounded"
+					className="text-muted-foreground flex items-center gap-1.5 text-xs hover:bg-accent px-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out"
 				>
-					<kbd className="text-xs leading-none">Esc</kbd>
+					<CommandShortcut>Esc</CommandShortcut>
 					<span className="leading-none">Close</span>
 				</button>
 				<div className="flex items-center gap-1.5">
 					<button
 						type="button"
-						className="flex items-center gap-1.5 text-xs hover:bg-accent px-2 py-1 rounded"
+						className="flex items-center gap-2 text-xs hover:bg-accent px-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out"
 					>
-						<kbd className="text-xs leading-none">⌘</kbd>
+						<CommandShortcut className="text-foreground">
+							<CornerDownLeft className="size-3" />
+						</CommandShortcut>
 						<span className="leading-none">Open</span>
 					</button>
 					<Separator orientation="vertical" className="!h-3" />
 					<button
 						type="button"
-						className="flex items-center gap-1.5 text-xs text-muted-foreground hover:bg-accent px-2 py-1.5 rounded"
+						className="flex items-center gap-1.5 text-xs text-muted-foreground hover:bg-accent px-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out"
 					>
-						<kbd className="text-xs leading-none flex items-center gap-0.5">
+						<CommandShortcut className="flex items-center gap-0.5">
 							⌘ <CornerDownLeft className="size-3" />
-						</kbd>
+						</CommandShortcut>
 						<span className="leading-none">Open in new tab</span>
 					</button>
 				</div>
