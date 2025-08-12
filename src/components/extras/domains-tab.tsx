@@ -42,88 +42,28 @@ export default function DomainsTab({
 	const toggleProfileVisibility = async () => {
 		if (!profilePreferences) return;
 
-		try {
-			const updatedProfilePreferences = {
-				...profilePreferences,
-				hidden: !profilePreferences.hidden,
-			};
-
-			onProfilePreferencesUpdate(updatedProfilePreferences);
-
-			const response = await fetch("/api/me/profile/preferences", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					hidden: !profilePreferences.hidden,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update profile visibility");
-			}
-		} catch (_) {
-			onProfilePreferencesUpdate(profilePreferences);
-		}
+		onProfilePreferencesUpdate({
+			...profilePreferences,
+			hidden: !profilePreferences.hidden,
+		});
 	};
 
 	const toggleAllowIndexing = async () => {
 		if (!profilePreferences) return;
 
-		try {
-			const updatedProfilePreferences = {
-				...profilePreferences,
-				googleIndexing: !profilePreferences.googleIndexing,
-			};
-
-			onProfilePreferencesUpdate(updatedProfilePreferences);
-
-			const response = await fetch("/api/me/profile/preferences", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					googleIndexing: !profilePreferences.googleIndexing,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update profile indexing");
-			}
-		} catch (_) {
-			onProfilePreferencesUpdate(profilePreferences);
-		}
+		onProfilePreferencesUpdate({
+			...profilePreferences,
+			googleIndexing: !profilePreferences.googleIndexing,
+		});
 	};
 
 	const updateFontFamily = async (font: FontFamily) => {
 		if (!profilePreferences || profilePreferences.fontFamily === font) return;
 
-		try {
-			const updatedProfilePreferences = {
-				...profilePreferences,
-				fontFamily: font,
-			};
-
-			onProfilePreferencesUpdate(updatedProfilePreferences);
-
-			const response = await fetch("/api/me/profile/preferences", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					fontFamily: font,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update font family");
-			}
-		} catch (_) {
-			onProfilePreferencesUpdate(profilePreferences);
-		}
+		onProfilePreferencesUpdate({
+			...profilePreferences,
+			fontFamily: font,
+		});
 	};
 
 	return (

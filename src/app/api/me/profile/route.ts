@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { unstable_cache } from "next/cache";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
@@ -9,12 +8,26 @@ import type { PublicProfile, ProfileModalData } from "@/types/profile";
 
 // TODO: Add rate limiting for profile updates (maybe 5 updates / min / user)
 
-// Cached function to fetch user profile
-const getCachedUserProfile = unstable_cache(
-  async (userId: string) => {
-    return (await prisma.user.findUnique({
+export async function GET() {
+  const requestId = crypto.randomUUID();
+
+  let user: PublicProfile | ProfileModalData | null = null;
+
+  try {
+    logger.debug({ requestId, type: "self" }, "Fetching self profile");
+
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      logger.warn({ requestId }, "Unauthorized profile access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    user = (await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: session.user.id,
       },
       select: {
         id: true,
@@ -44,40 +57,8 @@ const getCachedUserProfile = unstable_cache(
         profilePreferences: true,
       },
     })) as ProfileModalData;
-  },
-  ["user-profile"],
-  {
-    revalidate: 300, // Cache for 5 minutes
-    tags: ["user-profile"],
-  }
-);
 
-export async function GET() {
-  const requestId = crypto.randomUUID();
-
-  let user: PublicProfile | ProfileModalData | null = null;
-
-  try {
-    logger.debug({ requestId, type: "self" }, "Fetching self profile");
-
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      logger.warn({ requestId }, "Unauthorized profile access attempt");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    user = await getCachedUserProfile(session.user.id);
-
-    const response = NextResponse.json({ user });
-    response.headers.set(
-      "Cache-Control",
-      "private, s-maxage=300, stale-while-revalidate=600"
-    );
-
-    return response;
+    return NextResponse.json({ user });
   } catch (error) {
     logger.error(
       {

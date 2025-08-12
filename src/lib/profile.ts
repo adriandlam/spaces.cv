@@ -1,72 +1,59 @@
 import { headers } from "next/headers";
-import { unstable_cache } from "next/cache";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { ProfileModalData, PublicProfile } from "@/types/profile";
 
-// Cached function for public profile
-const getCachedPublicProfile = unstable_cache(
-  async (username: string) => {
-    const user = await prisma.user.findUnique({
-      where: {
-        username: username.toLowerCase(),
-      },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        image: true,
-        title: true,
-        about: true,
-        location: true,
-        website: true,
-        projects: {
-          orderBy: { createdAt: "asc" },
-        },
-        education: {
-          where: {
-            hidden: false,
-          },
-          orderBy: { from: "asc" },
-        },
-        workExperiences: {
-          orderBy: { from: "asc" },
-        },
-        profileOrder: true,
-        contacts: {
-          where: {
-            hidden: false,
-          },
-          orderBy: { createdAt: "asc" },
-        },
-        profilePreferences: true,
-      },
-    });
-
-    if (!user) return null;
-
-    // Ensure profileOrder has a default value if empty
-    const profileOrder =
-      user.profileOrder.length > 0
-        ? user.profileOrder
-        : ["experience", "education", "projects", "contacts"];
-
-    return {
-      ...user,
-      profileOrder,
-    } as PublicProfile;
-  },
-  ["public-profile"],
-  {
-    revalidate: 300, // Cache for 5 minutes
-    tags: ["public-profile"],
-  }
-);
-
 export async function getPublicProfile(
   username: string
 ): Promise<PublicProfile | null> {
-  return getCachedPublicProfile(username);
+  const user = await prisma.user.findUnique({
+    where: {
+      username: username.toLowerCase(),
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      image: true,
+      title: true,
+      about: true,
+      location: true,
+      website: true,
+      projects: {
+        orderBy: { createdAt: "asc" },
+      },
+      education: {
+        where: {
+          hidden: false,
+        },
+        orderBy: { from: "asc" },
+      },
+      workExperiences: {
+        orderBy: { from: "asc" },
+      },
+      profileOrder: true,
+      contacts: {
+        where: {
+          hidden: false,
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      profilePreferences: true,
+    },
+  });
+
+  if (!user) return null;
+
+  // Ensure profileOrder has a default value if empty
+  const profileOrder =
+    user.profileOrder.length > 0
+      ? user.profileOrder
+      : ["experience", "education", "projects", "contacts"];
+
+  return {
+    ...user,
+    profileOrder,
+  } as PublicProfile;
 }
 
 export async function getProfileModalData(): Promise<ProfileModalData | null> {

@@ -30,7 +30,8 @@ interface ProjectsTabProps {
 	onShowProjectForm: (show: boolean) => void;
 	onSubmit: (data: ProjectFormData) => Promise<void>;
 	isSubmitting: boolean;
-	onProjectUpdate?: (projects: Project[]) => void;
+	onProjectUpdate?: (id: string, updates: Partial<Project>) => void;
+	onProjectDelete?: (id: string) => void;
 }
 
 export default function ProjectsTab({
@@ -40,6 +41,7 @@ export default function ProjectsTab({
 	onSubmit,
 	isSubmitting,
 	onProjectUpdate,
+	onProjectDelete,
 }: ProjectsTabProps) {
 	const projectForm = useForm<ProjectFormData>({
 		resolver: zodResolver(projectSchema),
@@ -61,67 +63,14 @@ export default function ProjectsTab({
 	};
 
 	const hideProject = async (id: string) => {
-		const proj = projects.find((p) => p.id === id);
-		if (!proj) return;
+		const project = projects.find((p) => p.id === id);
+		if (!project) return;
 
-		try {
-			const updatedProjects = projects.map((p) =>
-				p.id === id ? { ...p, hidden: !p.hidden } : p,
-			);
-
-			// Update parent state
-			if (onProjectUpdate) {
-				onProjectUpdate(updatedProjects);
-			}
-
-			const response = await fetch("/api/me/profile/projects", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					id,
-					hidden: !proj.hidden,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update project visibility");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onProjectUpdate) {
-				onProjectUpdate(projects);
-			}
-		}
+		await onProjectUpdate?.(id, { hidden: !project.hidden });
 	};
 
 	const deleteProject = async (id: string) => {
-		try {
-			const updatedProjects = projects.filter((p) => p.id !== id);
-
-			// Update parent state
-			if (onProjectUpdate) {
-				onProjectUpdate(updatedProjects);
-			}
-
-			const response = await fetch("/api/me/profile/projects", {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ id }),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete project");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onProjectUpdate) {
-				onProjectUpdate(projects);
-			}
-		}
+		await onProjectDelete?.(id);
 	};
 
 	return (

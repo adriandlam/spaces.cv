@@ -147,15 +147,6 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-        updatedFields: Object.keys(validation.data),
-      },
-      "Profile preferences updated successfully"
-    );
-
     return NextResponse.json({
       success: true,
       message: "Preferences updated successfully",
@@ -204,8 +195,8 @@ export async function PUT(req: NextRequest) {
     const fullPreferencesSchema = z.object({
       hidden: z.boolean(),
       googleIndexing: z.boolean(),
-      fontFamily: z.nativeEnum(FontFamily),
-      theme: z.nativeEnum(Theme),
+      fontFamily: z.enum(FontFamily),
+      theme: z.enum(Theme),
     });
 
     const validation = fullPreferencesSchema.safeParse(body);
@@ -239,14 +230,6 @@ export async function PUT(req: NextRequest) {
         ...validation.data,
       },
     });
-
-    logger.info(
-      {
-        requestId,
-        userId: session.user.id,
-      },
-      "Profile preferences replaced successfully"
-    );
 
     return NextResponse.json({
       success: true,

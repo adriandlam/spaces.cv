@@ -40,6 +40,7 @@ import type {
 	GeneralFormData,
 	ProfileFormData,
 	ProjectFormData,
+	Project,
 } from "@/types/profile";
 import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
@@ -71,7 +72,6 @@ export default function ProfileModal() {
 	const [generalFormData, setGeneralFormData] = useState<
 		Partial<GeneralFormData>
 	>({});
-	const [, setProfilePreferences] = useState<ProfilePreferences | undefined>();
 	// const [originalPath, setOriginalPath] = useState<string | null>(null);
 
 	const searchParams = useSearchParams();
@@ -176,7 +176,6 @@ export default function ProfileModal() {
 				location: profile.location || "",
 				website: profile.website || "",
 			});
-			setProfilePreferences(profile.profilePreferences);
 		}
 	}, [profile]);
 
@@ -540,6 +539,79 @@ export default function ProfileModal() {
 		}
 	};
 
+	const onProjectUpdate = async (id: string, updates: Partial<Project>) => {
+		if (!profile?.projects) return;
+
+		// Optimistic update
+		const updatedProjects = profile.projects.map((p: Project) =>
+			p.id === id ? { ...p, ...updates } : p,
+		);
+
+		mutate(
+			{
+				user: {
+					...profile,
+					projects: updatedProjects,
+				},
+			},
+			false,
+		);
+
+		try {
+			const response = await fetch("/api/me/profile/projects", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id, ...updates }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update project");
+			}
+		} catch (error) {
+			// Revert on error
+			mutate();
+			console.error("Error updating project:", error);
+		}
+	};
+
+	const onProjectDelete = async (id: string) => {
+		if (!profile?.projects) return;
+
+		// Optimistic update
+		const updatedProjects = profile.projects.filter(
+			(p: Project) => p.id !== id,
+		);
+
+		mutate(
+			{
+				user: {
+					...profile,
+					projects: updatedProjects,
+				},
+			},
+			false,
+		);
+
+		try {
+			const response = await fetch("/api/me/profile/projects", {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete project");
+			}
+
+			// Revalidate to ensure consistency
+			mutate();
+		} catch (error) {
+			// Revert on error
+			mutate();
+			console.error("Error deleting project:", error);
+		}
+	};
+
 	const onContactUpdate = async (id: string, updates: Partial<Contact>) => {
 		if (!profile?.contacts) return;
 
@@ -610,6 +682,33 @@ export default function ProfileModal() {
 		}
 	};
 
+	const onProfilePreferencesUpdate = async (data: ProfilePreferences) => {
+		mutate(
+			{
+				user: {
+					...profile,
+					profilePreferences: data,
+				},
+			},
+			false,
+		);
+
+		try {
+			const response = await fetch("/api/me/profile/preferences", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update profile preferences");
+			}
+		} catch (error) {
+			mutate();
+			console.error("Error updating profile preferences:", error);
+		}
+	};
+
 	const onProfilePreferencesSubmit = async (data: ProfilePreferences) => {
 		setIsSubmitting(true);
 
@@ -623,7 +722,7 @@ export default function ProfileModal() {
 			false,
 		);
 		try {
-			const response = await fetch("/api/me/profile/profile-preferences", {
+			const response = await fetch("/api/me/profile/preferences", {
 				method: "PUT",
 
 				headers: { "Content-Type": "application/json" },
@@ -794,6 +893,8 @@ export default function ProfileModal() {
 											onShowProjectForm={setShowProjectForm}
 											onSubmit={onProjectSubmit}
 											isSubmitting={isSubmitting}
+											onProjectUpdate={onProjectUpdate}
+											onProjectDelete={onProjectDelete}
 										/>
 									)}
 									{activeTab === "contacts" && (
@@ -813,7 +914,7 @@ export default function ProfileModal() {
 											profilePreferences={profile?.profilePreferences}
 											onSubmit={onProfilePreferencesSubmit}
 											isSubmitting={isSubmitting}
-											onProfilePreferencesUpdate={setProfilePreferences}
+											onProfilePreferencesUpdate={onProfilePreferencesUpdate}
 										/>
 									)}
 									{activeTab === "integrations" && <IntegrationsTab />}
