@@ -1,7 +1,26 @@
-export default function ProfileLayout({
+import Nav from "@/components/nav";
+import { headers } from "next/headers";
+
+export default async function ProfileLayout({
 	children,
+	params,
 }: {
 	children: React.ReactNode;
+	params: Promise<{
+		username: string;
+	}>;
 }) {
-	return <div className="max-w-2xl w-full mx-auto py-18">{children}</div>;
+	const { username } = await params;
+
+	const headersList = await headers();
+	const referer = headersList.get("referer");
+
+	const isDirectAccess = referer?.includes(username);
+
+	return (
+		<div className="flex">
+			{!isDirectAccess && <Nav />}
+			<div className="max-w-2xl w-full mx-auto py-18">{children}</div>
+		</div>
+	);
 }

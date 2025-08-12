@@ -15,8 +15,9 @@ import {
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Button } from "./ui/button";
+import { GitHubIcon } from "./icons";
 
 const navItems = [
 	{
@@ -53,7 +54,12 @@ export default function Nav() {
 	}
 
 	return (
-		<nav className="sticky top-0 h-screen border-r px-3 flex justify-center items-center flex-col gap-4 py-4">
+		<nav className="sticky top-0 h-screen border-r border-y px-3 flex justify-center items-center flex-col gap-4 py-4 rounded-r-2xl">
+			<div>
+				<Button variant="outline" size="icon">
+					<GitHubIcon />
+				</Button>
+			</div>
 			<div className="flex flex-col gap-7 flex-1 justify-center">
 				{navItems.map((item) => (
 					<Tooltip key={item.href}>
@@ -61,7 +67,7 @@ export default function Nav() {
 							<Link
 								href={item.href}
 								className={cn(
-									"opacity-70 hover:opacity-100 transition-opacity",
+									"opacity-50 hover:opacity-100 transition-opacity",
 									pathname === item.href && "opacity-100",
 								)}
 							>

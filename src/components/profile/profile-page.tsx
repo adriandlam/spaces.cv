@@ -3,11 +3,19 @@
 import type { Session } from "better-auth";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	Ban,
 	Bookmark,
+	ChevronDown,
+	ChevronUp,
+	Coffee,
+	Flag,
+	Forward,
 	Mail,
 	MoreHorizontal,
 	Share,
 	SmilePlus,
+	ThumbsDown,
+	ThumbsUp,
 	UserPlus2,
 } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +31,14 @@ import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { contactTypeLabels } from "./contacts-tab";
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuItem,
+} from "../ui/dropdown-menu";
 
 export default function ProfilePage({
 	profile,
@@ -44,7 +60,8 @@ export default function ProfilePage({
 					"font-mono",
 			)}
 		>
-			{session && session?.userId !== profile?.id && <ProfileActions />}
+			<ProfileActions contactHref={profile?.contacts[0]?.href || ""} />
+			{/* {session && session?.userId !== profile?.id && <ProfileActions />} */}
 			<motion.div
 				className="space-y-10"
 				initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
@@ -53,20 +70,24 @@ export default function ProfilePage({
 				transition={{ duration: 0.2, ease: "easeOut" }}
 			>
 				<div className="flex items-center gap-4">
-					<div className="relative">
-						<Avatar className="size-20 border">
-							<AvatarImage src={profile?.image ?? undefined} />
-							<AvatarFallback className="text-xl tracking-wider uppercase">
-								{profile?.name.split(" ").map((name) => name.charAt(0))}
-							</AvatarFallback>
-						</Avatar>
-						<button
-							type="button"
-							className="absolute bottom-1 right-1 bg-muted rounded-full flex items-center justify-center shadow-sm"
-						>
-							<SmilePlus className="size-5 opacity-50" />
-						</button>
-					</div>
+					{session && (
+						<div className="relative">
+							<Avatar className={cn("size-20", !profile?.image && "border")}>
+								{profile?.image && (
+									<AvatarImage src={profile?.image} alt={profile?.name} />
+								)}
+								<AvatarFallback className="text-xl tracking-wider uppercase">
+									{profile?.name.split(" ").map((name) => name.charAt(0))}
+								</AvatarFallback>
+							</Avatar>
+							<button
+								type="button"
+								className="absolute bottom-1 right-1 bg-muted rounded-full flex items-center justify-center p-0.5 hover:bg-accent hover:cursor-pointer duration-200 ease-out"
+							>
+								<SmilePlus className="size-5 opacity-50" />
+							</button>
+						</div>
+					)}
 					<div className="">
 						<div
 							className="cursor-default relative h-7 inline-flex"
@@ -242,56 +263,68 @@ export default function ProfilePage({
 	);
 }
 
-function ProfileActions() {
+function ProfileActions({ contactHref }: { contactHref: string }) {
 	return (
-		<div className="border border-input/25 fixed flex items-center gap-1.5 bottom-3 left-1/2 -translate-x-1/2 bg-accent p-0.5 pr-2 rounded-full shadow-lg">
-			<Button size="sm" className="mr-1">
+		<div className="h-10 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-0.5 rounded-full shadow-lg">
+			<Button size="sm" className="hover:cursor-pointer">
 				<UserPlus2 />
 				Follow
 			</Button>
-			<Separator orientation="vertical" className="min-h-4 bg-input/75" />
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Button size="sm" variant="ghost">
-						<Bookmark />
-					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					<p>Add to bookmarks</p>
-				</TooltipContent>
-			</Tooltip>
-			<Separator orientation="vertical" className="min-h-4 bg-input/75" />
+			<Button
+				size="sm"
+				variant="ghost"
+				className="rounded-full !text-foreground opacity-100 hover:!bg-background hover:cursor-pointer"
+				asChild
+			>
+				<Link href={contactHref}>
+					<Coffee />
+					Coffee Chat
+				</Link>
+			</Button>
+			<Separator orientation="vertical" className="max-h-4 bg-input/75 mx-1" />
+			<div className="flex items-center gap-1.5">
+				<Button
+					variant="ghost"
+					className="rounded-full w-8 h-8 hover:!bg-background hover:text-blue-600 hover:cursor-pointer"
+				>
+					<ThumbsUp />
+				</Button>
+				<span className="text-xs">10</span>
+				<Button
+					variant="ghost"
+					className="rounded-full w-8 h-8 hover:!bg-background hover:text-orange-600 hover:cursor-pointer"
+				>
+					<ThumbsDown />
+				</Button>
+			</div>
+			<Separator orientation="vertical" className="max-h-4 bg-input/75" />
 			<div className="flex items-center">
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button size="sm" variant="ghost">
-							<Mail />
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>Contact</p>
-					</TooltipContent>
-				</Tooltip>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button size="sm" variant="ghost">
-							<Share />
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>Share</p>
-					</TooltipContent>
-				</Tooltip>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button size="sm" variant="ghost">
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							size="icon"
+							variant="ghost"
+							className="hover:!bg-background hover:cursor-pointer h-8 w-8 rounded-full"
+						>
 							<MoreHorizontal />
 						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>More options</p>
-					</TooltipContent>
-				</Tooltip>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						<DropdownMenuItem>
+							<Forward className="size-3.5" />
+							Share Profile
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem className="[&_svg]:!text-orange-400 hover:[&_svg]:!text-orange-400">
+							<Flag className="size-3.5" />
+							Report Profile
+						</DropdownMenuItem>
+						<DropdownMenuItem className="[&_svg]:!text-destructive hover:[&_svg]:!text-destructive">
+							<Ban className="size-3.5" />
+							Block User
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 		</div>
 	);

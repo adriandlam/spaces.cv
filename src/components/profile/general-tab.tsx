@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, CircleCheck, CircleX } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,6 +20,7 @@ import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
 import { useDropzone } from "react-dropzone";
+import Image from "next/image";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;
@@ -49,6 +50,7 @@ export default function GeneralTab({
 			...defaultValues,
 		},
 	});
+	const [image, setImage] = useState<string | null>(null);
 
 	// Reset form when defaultValues change
 	useEffect(() => {
@@ -78,7 +80,7 @@ export default function GeneralTab({
 			console.error(error);
 		}
 	}, []);
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+	const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
 	return (
 		<Form {...generalForm}>
@@ -88,9 +90,11 @@ export default function GeneralTab({
 				className="space-y-4"
 			>
 				<div className="flex items-center gap-8">
-					<div {...getRootProps()}>
+					<div {...getRootProps()} className="hover:cursor-pointer">
 						<Avatar className="ring ring-border size-20 mt-2.5">
-							<AvatarImage src={userImage ?? undefined} alt={userName ?? ""} />
+							{userImage && (
+								<AvatarImage src={userImage} alt={userName ?? ""} />
+							)}
 							<AvatarFallback>
 								<Camera
 									strokeWidth={1.5}

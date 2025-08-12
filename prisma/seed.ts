@@ -11,10 +11,10 @@ async function main() {
       name: "Adrian Lam",
       email: "me@adriandlam.com",
       emailVerified: true,
-      image: `https://${process.env.R2_CUSTOM_DOMAIN}/profile-images/Xz3oy0pBhC50C2I8SMbXGqw4GvmjL8vJ/avatar.png`,
+      image: `https://${process.env.R2_CUSTOM_DOMAIN}/profile-images/Xz3oy0pBhC50C2I8SMbXGqw4GvmjL8vJ/avatar.jpeg`,
       username: "adrianlam",
       onboarded: true,
-      title: "Math student at UBC. I like AI, building, and learning.",
+      title: "Software Engineer",
       about: `I'm super passionate about building stuff that either solves real problems or helps me learn new concepts (super firm believer in project-based learning).
 
 I also enjoy reflecting deeply about society, one's place in it, and where we're all heading. I think reflecting is a good way to improve oneself since it's important to have an outlook on life that isn't just about the present, but also considers the bigger picture.
@@ -210,7 +210,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       emailVerified: true,
       username: "shubhaankar",
       onboarded: true,
-      title: "CS student at UBC researching Distributed Systems and ML",
+      title: "CS Student at UBC",
       about: `I'm passionate about building systems that solve real problems. My approach is guided by "rejecting artificial bounds" - exceptional versatility is possible when you focus on continuous learning and building.
 
 I've been programming since I was 9, starting with QBasic. I enjoy tackling challenging, often obscure problems. I believe in contributing to communities and creating tools that help people work more effectively.

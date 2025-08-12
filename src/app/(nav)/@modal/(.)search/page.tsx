@@ -1,7 +1,7 @@
 "use client";
 
 import { ExternalArrow } from "@/components/icons";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	CommandDialog,
@@ -158,7 +158,7 @@ export default function SearchModal() {
 					const nextIndex = SUGGESTIONS.indexOf(prev) + 1;
 					return SUGGESTIONS[nextIndex % SUGGESTIONS.length];
 				});
-			}, 2000);
+			}, 1750);
 
 			return () => clearInterval(interval);
 		}
@@ -237,12 +237,12 @@ export default function SearchModal() {
 				</AnimatePresence>
 				{aiMode && !searchQuery.trim() && (
 					<div className="absolute text-sm top-1/2 -translate-y-1/2  pointer-events-none left-9">
-						<AnimatePresence mode="popLayout">
+						<AnimatePresence mode="popLayout" initial={false}>
 							<motion.span
 								key={currentSuggestion}
-								initial={{ opacity: 0, filter: "blur(10px)" }}
-								animate={{ opacity: 1, filter: "blur(0px)" }}
-								exit={{ opacity: 0, filter: "blur(10px)" }}
+								initial={{ opacity: 0, y: 10, filter: "blur(10px)" }}
+								animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+								exit={{ opacity: 0, y: -10, filter: "blur(10px)" }}
 								transition={{ duration: 0.3, ease: "easeOut" }}
 								className="text-muted-foreground text-nowrap"
 							>
@@ -331,9 +331,13 @@ export default function SearchModal() {
 					searchResults.length > 0 && (
 						<CommandGroup heading={`Search results (${searchResults.length})`}>
 							{searchResults.map((profile) => (
-								<CommandItem key={profile.id} asChild className="group !pr-3">
+								<CommandItem
+									key={profile.id}
+									asChild
+									className="group !pr-3 hover:cursor-pointer"
+								>
 									<Link
-										href={`/profile/${profile.username}`}
+										href={`/${profile.username}`}
 										onClick={() => {
 											setOpen(false);
 										}}
@@ -341,6 +345,9 @@ export default function SearchModal() {
 									>
 										<div className="flex items-center gap-2">
 											<Avatar className="size-9">
+												{profile.image && (
+													<AvatarImage src={profile.image} alt={profile.name} />
+												)}
 												<AvatarFallback className="tracking-wider uppercase">
 													{profile?.name
 														.split(" ")
@@ -380,9 +387,13 @@ export default function SearchModal() {
 						{profilesData.length > 0 && (
 							<CommandGroup heading="Recently joined">
 								{profilesData.map((profile) => (
-									<CommandItem key={profile.id} asChild className="group !pr-3">
+									<CommandItem
+										key={profile.id}
+										asChild
+										className="group !pr-3 hover:cursor-pointer"
+									>
 										<Link
-											href={`/profile/${profile.username}`}
+											href={`/${profile.username}`}
 											onClick={() => {
 												setOpen(false);
 											}}
@@ -390,7 +401,12 @@ export default function SearchModal() {
 										>
 											<div className="flex items-center gap-2">
 												<Avatar className="size-9">
-													{/* <AvatarImage src={profile.image} /> */}
+													{profile.image && (
+														<AvatarImage
+															src={profile.image}
+															alt={profile.name}
+														/>
+													)}
 													<AvatarFallback className="tracking-wider uppercase">
 														{profile?.name
 															.split(" ")
