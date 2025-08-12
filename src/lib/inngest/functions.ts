@@ -10,7 +10,7 @@ export const batchBuildSearchIndex = inngest.createFunction(
     description:
       "Builds the search index for all users with stale embeddings or search vector",
     batchEvents: {
-      maxSize: 50,
+      maxSize: 5,
       timeout: "30s",
     },
   },
