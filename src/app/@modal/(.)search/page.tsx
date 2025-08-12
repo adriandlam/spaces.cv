@@ -122,7 +122,6 @@ export default function SearchModal() {
 	const debouncedSearch = useCallback(
 		debounce(async (query: string) => {
 			if (!query.trim()) {
-				setSearchResults([]);
 				setIsSearching(false);
 				return;
 			}
@@ -148,6 +147,8 @@ export default function SearchModal() {
 	useEffect(() => {
 		if (searchQuery.trim()) {
 			debouncedSearch(searchQuery);
+		} else {
+			setSearchResults([]);
 		}
 	}, [searchQuery, aiMode, debouncedSearch]);
 
@@ -266,76 +267,55 @@ export default function SearchModal() {
 			</div>
 			<CommandList>
 				{!aiMode &&
-					searchQuery.trim() &&
+					!searchQuery.trim() &&
 					!isSearching &&
 					searchResults.length === 0 && (
 						<CommandEmpty>No results found for "{searchQuery}"</CommandEmpty>
 					)}
 
-				<AnimatePresence>
-					{!page &&
-						!aiMode &&
-						searchQuery.trim() &&
-						!isSearching &&
-						searchResults.length > 0 && (
-							<CommandGroup
-								heading={`Search results (${searchResults.length})`}
-							>
-								{searchResults.map((profile) => (
-									<motion.div
-										initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-										animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-										exit={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-										transition={{ duration: 0.1, ease: "easeOut" }}
+				{!page &&
+					!aiMode &&
+					searchQuery.trim() &&
+					!isSearching &&
+					searchResults.length > 0 && (
+						<CommandGroup heading={`Search results (${searchResults.length})`}>
+							{searchResults.map((profile) => (
+								<CommandItem asChild className="group !pr-3">
+									<Link
+										href={`/profile/${profile.username}`}
+										onClick={() => {
+											setOpen(false);
+										}}
+										className="flex justify-between"
 									>
-										<CommandItem
-											key={profile.id}
-											asChild
-											className="group !pr-3"
-										>
-											<Link
-												href={`/profile/${profile.username}`}
-												onClick={() => {
-													setOpen(false);
-												}}
-												className="flex justify-between"
-											>
-												<div className="flex items-center gap-2">
-													<Avatar className="size-9">
-														<AvatarFallback className="tracking-wider uppercase">
-															{profile?.name
-																.split(" ")
-																.map((name) => name.charAt(0))}
-														</AvatarFallback>
-													</Avatar>
-													<div className="flex flex-col leading-4">
-														<span>{profile.name}</span>
-														<p className="text-xs text-muted-foreground">
-															@{profile.username}
-														</p>
-													</div>
-												</div>
-												<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
-													<span>Visit</span>
-													<ExternalArrow className="!size-3 !text-foreground" />
-												</div>
-											</Link>
-										</CommandItem>
-									</motion.div>
-								))}
-							</CommandGroup>
-						)}
-				</AnimatePresence>
+										<div className="flex items-center gap-2">
+											<Avatar className="size-9">
+												<AvatarFallback className="tracking-wider uppercase">
+													{profile?.name
+														.split(" ")
+														.map((name) => name.charAt(0))}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex flex-col leading-4">
+												<span>{profile.name}</span>
+												<p className="text-xs text-muted-foreground">
+													@{profile.username}
+												</p>
+											</div>
+										</div>
+										<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+											<span>Visit</span>
+											<ExternalArrow className="!size-3 !text-foreground" />
+										</div>
+									</Link>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					)}
 
-				<AnimatePresence>
-					{!page && !aiMode && !searchQuery.trim() && (
-						<motion.div
-							initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-							animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-							exit={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-							transition={{ duration: 0.15, ease: "easeOut" }}
-						>
-							{/* <CommandGroup heading="Actions">
+				{!page && !aiMode && !searchQuery.trim() && (
+					<>
+						{/* <CommandGroup heading="Actions">
 							<CommandItem onSelect={() => setPages([...pages, "projects"])}>
 								<span>Browse projects...</span>
 							</CommandItem>
@@ -347,136 +327,131 @@ export default function SearchModal() {
 							</CommandItem>
 						</CommandGroup> */}
 
-							{profilesData.length > 0 && (
-								<CommandGroup heading="Recently joined">
-									{profilesData.map((profile) => (
-										<CommandItem
-											key={profile.id}
-											asChild
-											className="group !pr-3"
+						{profilesData.length > 0 && (
+							<CommandGroup heading="Recently joined">
+								{profilesData.map((profile) => (
+									<CommandItem key={profile.id} asChild className="group !pr-3">
+										<Link
+											href={`/profile/${profile.username}`}
+											onClick={() => {
+												setOpen(false);
+											}}
+											className="flex justify-between"
 										>
-											<Link
-												href={`/profile/${profile.username}`}
-												onClick={() => {
-													setOpen(false);
-												}}
-												className="flex justify-between"
-											>
-												<div className="flex items-center gap-2">
-													<Avatar className="size-9">
-														{/* <AvatarImage src={profile.image} /> */}
-														<AvatarFallback className="tracking-wider uppercase">
-															{profile?.name
-																.split(" ")
-																.map((name) => name.charAt(0))}
-														</AvatarFallback>
-													</Avatar>
-													<div className="flex flex-col leading-4">
-														<span>{profile.name}</span>
-														<p className="text-xs text-muted-foreground">
-															@{profile.username}
-														</p>
-													</div>
+											<div className="flex items-center gap-2">
+												<Avatar className="size-9">
+													{/* <AvatarImage src={profile.image} /> */}
+													<AvatarFallback className="tracking-wider uppercase">
+														{profile?.name
+															.split(" ")
+															.map((name) => name.charAt(0))}
+													</AvatarFallback>
+												</Avatar>
+												<div className="flex flex-col leading-4">
+													<span>{profile.name}</span>
+													<p className="text-xs text-muted-foreground">
+														@{profile.username}
+													</p>
 												</div>
-												<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
-													<span>Visit</span>
-													<ExternalArrow className="!size-3 !text-foreground" />
-												</div>
-											</Link>
-										</CommandItem>
-									))}
-								</CommandGroup>
-							)}
-						</motion.div>
-					)}
+											</div>
+											<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+												<span>Visit</span>
+												<ExternalArrow className="!size-3 !text-foreground" />
+											</div>
+										</Link>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
+					</>
+				)}
 
-					{page === "projects" && (
-						<CommandGroup heading="Projects">
-							<CommandItem onSelect={() => console.log("Project A selected")}>
-								<span>Project A</span>
-								<CommandShortcut>Demo</CommandShortcut>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Project B selected")}>
-								<span>Project B</span>
-								<CommandShortcut>Demo</CommandShortcut>
-							</CommandItem>
-							<CommandItem
-								onSelect={() => setPages([...pages, "create-project"])}
-							>
-								<span>Create new project...</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{page === "projects" && (
+					<CommandGroup heading="Projects">
+						<CommandItem onSelect={() => console.log("Project A selected")}>
+							<span>Project A</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Project B selected")}>
+							<span>Project B</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => setPages([...pages, "create-project"])}
+						>
+							<span>Create new project...</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 
-					{page === "teams" && (
-						<CommandGroup heading="Teams">
-							<CommandItem onSelect={() => console.log("Team 1 selected")}>
-								<span>Team Alpha</span>
-								<CommandShortcut>Demo</CommandShortcut>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Team 2 selected")}>
-								<span>Team Beta</span>
-								<CommandShortcut>Demo</CommandShortcut>
-							</CommandItem>
-							<CommandItem onSelect={() => setPages([...pages, "join-team"])}>
-								<span>Join a team...</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{page === "teams" && (
+					<CommandGroup heading="Teams">
+						<CommandItem onSelect={() => console.log("Team 1 selected")}>
+							<span>Team Alpha</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Team 2 selected")}>
+							<span>Team Beta</span>
+							<CommandShortcut>Demo</CommandShortcut>
+						</CommandItem>
+						<CommandItem onSelect={() => setPages([...pages, "join-team"])}>
+							<span>Join a team...</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 
-					{page === "settings" && (
-						<CommandGroup heading="Settings">
-							<CommandItem onSelect={() => console.log("Profile settings")}>
-								<span>Profile settings</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Account settings")}>
-								<span>Account settings</span>
-							</CommandItem>
-							<CommandItem onSelect={() => setPages([...pages, "theme"])}>
-								<span>Theme...</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{page === "settings" && (
+					<CommandGroup heading="Settings">
+						<CommandItem onSelect={() => console.log("Profile settings")}>
+							<span>Profile settings</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Account settings")}>
+							<span>Account settings</span>
+						</CommandItem>
+						<CommandItem onSelect={() => setPages([...pages, "theme"])}>
+							<span>Theme...</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 
-					{page === "create-project" && (
-						<CommandGroup heading="Create Project">
-							<CommandItem onSelect={() => console.log("Empty project")}>
-								<span>Empty project</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("From template")}>
-								<span>From template</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Import repository")}>
-								<span>Import repository</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{page === "create-project" && (
+					<CommandGroup heading="Create Project">
+						<CommandItem onSelect={() => console.log("Empty project")}>
+							<span>Empty project</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("From template")}>
+							<span>From template</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Import repository")}>
+							<span>Import repository</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 
-					{page === "join-team" && (
-						<CommandGroup heading="Join Team">
-							<CommandItem onSelect={() => console.log("By invitation")}>
-								<span>By invitation code</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Public teams")}>
-								<span>Browse public teams</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{page === "join-team" && (
+					<CommandGroup heading="Join Team">
+						<CommandItem onSelect={() => console.log("By invitation")}>
+							<span>By invitation code</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Public teams")}>
+							<span>Browse public teams</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 
-					{page === "theme" && (
-						<CommandGroup heading="Theme">
-							<CommandItem onSelect={() => console.log("Light theme")}>
-								<span>Light</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("Dark theme")}>
-								<span>Dark</span>
-							</CommandItem>
-							<CommandItem onSelect={() => console.log("System theme")}>
-								<span>System</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
-				</AnimatePresence>
+				{page === "theme" && (
+					<CommandGroup heading="Theme">
+						<CommandItem onSelect={() => console.log("Light theme")}>
+							<span>Light</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("Dark theme")}>
+							<span>Dark</span>
+						</CommandItem>
+						<CommandItem onSelect={() => console.log("System theme")}>
+							<span>System</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 			</CommandList>
 			<Separator />
 			<div className="flex justify-between p-1 items-center">

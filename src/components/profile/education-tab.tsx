@@ -30,7 +30,8 @@ interface EducationTabProps {
 	onShowEducationForm: (show: boolean) => void;
 	onSubmit: (data: EducationFormData) => Promise<void>;
 	isSubmitting: boolean;
-	onEducationUpdate?: (education: Education[]) => void;
+	onEducationUpdate: (id: string, updates: Partial<Education>) => Promise<void>;
+	onEducationDelete: (id: string) => Promise<void>;
 }
 
 export default function EducationTab({
@@ -40,6 +41,7 @@ export default function EducationTab({
 	onSubmit,
 	isSubmitting,
 	onEducationUpdate,
+	onEducationDelete,
 }: EducationTabProps) {
 	const educationForm = useForm<EducationFormData>({
 		resolver: zodResolver(educationSchema),
@@ -67,64 +69,11 @@ export default function EducationTab({
 		const edu = education.find((e) => e.id === id);
 		if (!edu) return;
 
-		try {
-			const updatedEducation = education.map((e) =>
-				e.id === id ? { ...e, hidden: !e.hidden } : e,
-			);
-
-			// Update parent state
-			if (onEducationUpdate) {
-				onEducationUpdate(updatedEducation);
-			}
-
-			const response = await fetch("/api/me/profile/education", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					id,
-					hidden: !edu.hidden,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update education visibility");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onEducationUpdate) {
-				onEducationUpdate(education);
-			}
-		}
+		await onEducationUpdate(id, { hidden: !edu.hidden });
 	};
 
 	const deleteEducation = async (id: string) => {
-		try {
-			const updatedEducation = education.filter((e) => e.id !== id);
-
-			// Update parent state
-			if (onEducationUpdate) {
-				onEducationUpdate(updatedEducation);
-			}
-
-			const response = await fetch("/api/me/profile/education", {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ id }),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete education");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onEducationUpdate) {
-				onEducationUpdate(education);
-			}
-		}
+		await onEducationDelete(id);
 	};
 
 	return (

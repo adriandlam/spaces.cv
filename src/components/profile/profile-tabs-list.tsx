@@ -6,16 +6,11 @@ import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Info } from "lucide-react";
-import Link from "next/link";
 import * as React from "react";
 import { SortableTab } from "@/components/sortable-tab";
 import { Label } from "@/components/ui/label";
-import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { ExternalArrow } from "../icons";
 import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const defaultProfileTabs = [
 	{ id: "general", label: "General" },
@@ -39,7 +34,7 @@ interface ProfileTabsListProps {
 	isLoading: boolean;
 	activeTab: ProfileTab;
 	onTabChange: (tabId: ProfileTab) => void;
-	profileOrder: string[];
+	profileOrder?: string[];
 	onDragEnd: (event: DragEndEvent) => void;
 }
 
@@ -50,15 +45,13 @@ export default function ProfileTabsList({
 	profileOrder,
 	onDragEnd,
 }: ProfileTabsListProps) {
-	const { data: session } = useSession();
-
 	// Create ordered profile tabs based on user's section order
 	const profileTabs = React.useMemo(() => {
 		const orderedTabs: (typeof defaultProfileTabs)[number][] = [
 			defaultProfileTabs[0],
 		]; // Always keep "general" first
 
-		if (profileOrder.length > 0) {
+		if (profileOrder && profileOrder.length > 0) {
 			profileOrder.forEach((sectionId: string) => {
 				const tab = defaultProfileTabs.find((t) => t.id === sectionId);
 				if (tab && tab.id !== "general") {
@@ -84,7 +77,7 @@ export default function ProfileTabsList({
 						modifiers={[restrictToVerticalAxis]}
 					>
 						<SortableContext
-							items={profileOrder}
+							items={profileOrder || []}
 							strategy={verticalListSortingStrategy}
 						>
 							<ul className="space-y-1">

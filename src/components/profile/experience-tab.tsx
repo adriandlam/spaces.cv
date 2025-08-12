@@ -28,7 +28,11 @@ interface ExperienceTabProps {
 	onShowExperienceForm: (show: boolean) => void;
 	onSubmit: (data: ExperienceFormData) => Promise<void>;
 	isSubmitting: boolean;
-	onExperienceUpdate?: (experiences: WorkExperience[]) => void;
+	onExperienceUpdate: (
+		id: string,
+		updates: Partial<WorkExperience>,
+	) => Promise<void>;
+	onExperienceDelete: (id: string) => Promise<void>;
 }
 
 export default function ExperienceTab({
@@ -38,6 +42,7 @@ export default function ExperienceTab({
 	onSubmit,
 	isSubmitting,
 	onExperienceUpdate,
+	onExperienceDelete,
 }: ExperienceTabProps) {
 	const experienceForm = useForm<ExperienceFormData>({
 		resolver: zodResolver(experienceSchema),
@@ -62,64 +67,11 @@ export default function ExperienceTab({
 		const exp = experiences.find((e) => e.id === id);
 		if (!exp) return;
 
-		try {
-			const updatedExperiences = experiences.map((e) =>
-				e.id === id ? { ...e, hidden: !e.hidden } : e,
-			);
-
-			// Update parent state
-			if (onExperienceUpdate) {
-				onExperienceUpdate(updatedExperiences);
-			}
-
-			const response = await fetch("/api/me/profile/experience", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					id,
-					hidden: !exp.hidden,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update experience visibility");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onExperienceUpdate) {
-				onExperienceUpdate(experiences);
-			}
-		}
+		await onExperienceUpdate(id, { hidden: !exp.hidden });
 	};
 
 	const deleteExperience = async (id: string) => {
-		try {
-			const updatedExperiences = experiences.filter((e) => e.id !== id);
-
-			// Update parent state
-			if (onExperienceUpdate) {
-				onExperienceUpdate(updatedExperiences);
-			}
-
-			const response = await fetch("/api/me/profile/experience", {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ id }),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete experience");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onExperienceUpdate) {
-				onExperienceUpdate(experiences);
-			}
-		}
+		await onExperienceDelete(id);
 	};
 
 	const formatDateRange = (from: string, to: string | null) => {
@@ -174,7 +126,9 @@ export default function ExperienceTab({
 									</div>
 									<div className="flex items-center justify-between w-full">
 										<div className="flex flex-col">
-											<div>{exp.company}</div>
+											<div className={cn(exp.hidden && "opacity-50")}>
+												{exp.company}
+											</div>
 											<p className="text-muted-foreground opacity-75 text-sm">
 												{exp.title}
 											</p>

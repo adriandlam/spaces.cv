@@ -75,17 +75,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ users });
     }
 
-    // Debug: Check actual searchVector content
-    const debugData = await prisma.$queryRaw`
-      SELECT 
-        name, username, "searchableText", "searchVector"::text as search_vector_text
-      FROM "user"
-      LIMIT 5
-    `;
-
-    console.log("Debug data:", debugData);
-    console.log("Search query:", query);
-
     // Try the searchVector query with prefix matching
     let users = await prisma.$queryRaw`
       SELECT 

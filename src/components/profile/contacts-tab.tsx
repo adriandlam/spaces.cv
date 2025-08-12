@@ -39,7 +39,8 @@ interface ContactsTabProps {
 	onShowContactForm: (show: boolean) => void;
 	onSubmit: (data: ContactFormData) => Promise<void>;
 	isSubmitting: boolean;
-	onContactsUpdate?: (contacts: Contact[]) => void;
+	onContactUpdate: (id: string, updates: Partial<Contact>) => Promise<void>;
+	onContactDelete: (id: string) => Promise<void>;
 }
 
 export const contactTypeLabels: Record<Contact["type"], string> = {
@@ -82,9 +83,9 @@ export default function ContactsTab({
 	onShowContactForm,
 	onSubmit,
 	isSubmitting,
-	onContactsUpdate,
+	onContactUpdate,
+	onContactDelete,
 }: ContactsTabProps) {
-	// const { mutateContacts } = useProfile();
 	const contactForm = useForm<ContactFormData>({
 		resolver: zodResolver(contactSchema),
 		mode: "onChange",
@@ -121,80 +122,15 @@ export default function ContactsTab({
 		}
 	};
 
-	const handleCancel = () => {
-		onShowContactForm(false);
-		contactForm.reset();
-	};
-
 	const hideContact = async (id: string) => {
 		const contact = contacts.find((c) => c.id === id);
 		if (!contact) return;
 
-		try {
-			const updatedContacts = contacts.map((c) =>
-				c.id === id ? { ...c, hidden: !c.hidden } : c,
-			);
-
-			// mutateContacts(
-			// 	{
-			// 		contacts: updatedContacts,
-			// 	},
-			// 	false,
-			// );
-
-			// Update parent state
-			if (onContactsUpdate) {
-				onContactsUpdate(updatedContacts);
-			}
-
-			const response = await fetch("/api/me/profile/contacts", {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					id,
-					hidden: !contact.hidden,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update contact visibility");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onContactsUpdate) {
-				onContactsUpdate(contacts);
-			}
-		}
+		await onContactUpdate(id, { hidden: !contact.hidden });
 	};
 
 	const deleteContact = async (id: string) => {
-		try {
-			const updatedContacts = contacts.filter((c) => c.id !== id);
-
-			// Update parent state
-			if (onContactsUpdate) {
-				onContactsUpdate(updatedContacts);
-			}
-
-			const response = await fetch("/api/me/profile/contacts", {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ id }),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete contact");
-			}
-		} catch (_) {
-			// Revert on error and revalidate
-			if (onContactsUpdate) {
-				onContactsUpdate(contacts);
-			}
-		}
+		await onContactDelete(id);
 	};
 
 	return (
