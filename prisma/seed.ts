@@ -1,6 +1,5 @@
-import { PrismaClient, type ContactType } from "../src/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import { type ContactType } from "../src/app/generated/prisma";
+import prisma from "@/lib/prisma";
 
 async function main() {
   // Create Adrian's user profile
