@@ -12,11 +12,11 @@ import {
 	Forward,
 	Mail,
 	MoreHorizontal,
+	Plus,
 	Share,
 	SmilePlus,
-	ThumbsDown,
-	ThumbsUp,
-	UserPlus2,
+	Trash,
+	User,
 } from "lucide-react";
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
@@ -29,14 +29,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
 import { contactTypeLabels } from "./contacts-tab";
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
 	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuItem,
 } from "../ui/dropdown-menu";
 
@@ -89,8 +87,9 @@ export default function ProfilePage({
 						</div>
 					)}
 					<div className="">
-						<div
-							className="cursor-default relative h-7 inline-flex"
+						<button
+							type="button"
+							className="cursor-default relative h-7 inline-flex border-none bg-transparent p-0 text-left"
 							onMouseEnter={() => setShowUsername(true)}
 							onMouseLeave={() => setShowUsername(false)}
 						>
@@ -127,7 +126,7 @@ export default function ProfilePage({
 									</motion.p>
 								)}
 							</AnimatePresence>
-						</div>
+						</button>
 						<p className="text-muted-foreground lowercase">
 							{profile?.title} in {profile?.location}
 						</p>
@@ -267,7 +266,7 @@ function ProfileActions({ contactHref }: { contactHref: string }) {
 	return (
 		<div className="h-10 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-0.5 rounded-full shadow-lg">
 			<Button size="sm" className="hover:cursor-pointer">
-				<UserPlus2 />
+				<User />
 				Follow
 			</Button>
 			<Button
@@ -276,7 +275,7 @@ function ProfileActions({ contactHref }: { contactHref: string }) {
 				className="rounded-full !text-foreground opacity-100 hover:!bg-background hover:cursor-pointer"
 				asChild
 			>
-				<Link href={contactHref}>
+				<Link href={contactHref} prefetch={false}>
 					<Coffee />
 					Coffee Chat
 				</Link>
@@ -287,14 +286,14 @@ function ProfileActions({ contactHref }: { contactHref: string }) {
 					variant="ghost"
 					className="rounded-full w-8 h-8 hover:!bg-background hover:text-blue-600 hover:cursor-pointer"
 				>
-					<ThumbsUp />
+					<Plus />
 				</Button>
 				<span className="text-xs">10</span>
 				<Button
 					variant="ghost"
 					className="rounded-full w-8 h-8 hover:!bg-background hover:text-orange-600 hover:cursor-pointer"
 				>
-					<ThumbsDown />
+					<Trash />
 				</Button>
 			</div>
 			<Separator orientation="vertical" className="max-h-4 bg-input/75" />

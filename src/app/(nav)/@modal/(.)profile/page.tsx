@@ -817,7 +817,7 @@ export default function ProfileModal() {
 										/>
 									)}
 									{activeTab === "integrations" && <IntegrationsTab />}
-									{activeTab === "export" && <ExportTab />}
+									{/* {activeTab === "export" && <ExportTab />} */}
 								</div>
 							</div>
 							<div className="flex justify-between gap-0.5 pt-8 absolute right-0 -bottom-1">

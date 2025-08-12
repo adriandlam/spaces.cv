@@ -23,7 +23,7 @@ const defaultProfileTabs = [
 const extrasTabs = [
 	{ id: "domains", label: "Domains & Publishing" },
 	{ id: "integrations", label: "Integrations" },
-	{ id: "export", label: "Export" },
+	// { id: "export", label: "Export" },
 ] as const;
 
 export type ProfileTab =

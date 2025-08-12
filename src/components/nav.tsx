@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Search, User, UserRound } from "lucide-react";
+import { Home, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -8,16 +8,17 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { cn, fetcher } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
 import { GitHubIcon } from "./icons";
+import { useEffect } from "react";
+import { preload } from "swr";
 
 const navItems = [
 	{
@@ -42,8 +43,13 @@ export default function Nav() {
 	const { data: session } = useSession();
 	const router = useRouter();
 
-	router.prefetch("/search");
-	router.prefetch("/profile");
+	useEffect(() => {
+		// Preload API data using SWR
+		if (session?.user) {
+			preload("/api/me/profile", fetcher);
+			preload("/api/profiles?limit=10", fetcher);
+		}
+	}, [session?.user]);
 
 	useHotkeys("slash", () => {
 		router.push("/search");
@@ -56,8 +62,14 @@ export default function Nav() {
 	return (
 		<nav className="sticky top-0 h-screen border-r border-y px-3 flex justify-center items-center flex-col gap-4 py-4 rounded-r-2xl">
 			<div>
-				<Button variant="outline" size="icon">
-					<GitHubIcon />
+				<Button variant="outline" size="icon" asChild>
+					<Link
+						target="_blank"
+						rel="noopener noreferrer"
+						href="https://github.com/adriandlam/spaces.cv"
+					>
+						<GitHubIcon />
+					</Link>
 				</Button>
 			</div>
 			<div className="flex flex-col gap-7 flex-1 justify-center">
@@ -66,6 +78,7 @@ export default function Nav() {
 						<TooltipTrigger>
 							<Link
 								href={item.href}
+								prefetch={true}
 								className={cn(
 									"opacity-50 hover:opacity-100 transition-opacity",
 									pathname === item.href && "opacity-100",
@@ -94,7 +107,9 @@ export default function Nav() {
 					<DropdownMenuContent>
 						<DropdownMenuItem>Invite a friend</DropdownMenuItem>
 						<DropdownMenuItem asChild>
-							<Link href="/settings">Settings</Link>
+							<Link href="/settings" prefetch={true}>
+								Settings
+							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem>Logout</DropdownMenuItem>

@@ -21,6 +21,7 @@ import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
+import normalizeUrl from "normalize-url";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;

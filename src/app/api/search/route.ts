@@ -1,7 +1,7 @@
 import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-import { embed, generateText } from "ai";
+import { type NextRequest, NextResponse } from "next/server";
+import { embed } from "ai";
 import { gateway } from "@ai-sdk/gateway";
 
 export async function GET(req: NextRequest) {
@@ -76,7 +76,12 @@ export async function GET(req: NextRequest) {
       ORDER BY rrf_score DESC, semantic_score DESC, fulltext_score DESC
       LIMIT 50
     `;
-      return NextResponse.json({ users });
+      const response = NextResponse.json({ users });
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=300, stale-while-revalidate=600"
+      );
+      return response;
     }
 
     // Try the searchVector query with prefix matching
@@ -102,7 +107,12 @@ export async function GET(req: NextRequest) {
       `;
     }
 
-    return NextResponse.json({ users });
+    const response = NextResponse.json({ users });
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=180, stale-while-revalidate=300"
+    );
+    return response;
   } catch (error) {
     logger.error(
       {

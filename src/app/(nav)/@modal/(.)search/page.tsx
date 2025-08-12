@@ -2,7 +2,7 @@
 
 import { ExternalArrow } from "@/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -46,6 +46,8 @@ export default function SearchModal() {
 	}>("/api/profiles?limit=10", {
 		refreshInterval: 5 * 60 * 1000,
 		revalidateIfStale: false,
+		revalidateOnFocus: false,
+		dedupingInterval: 5 * 60 * 1000, // Don't refetch within 5 minutes
 	});
 
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -394,6 +396,7 @@ export default function SearchModal() {
 									>
 										<Link
 											href={`/${profile.username}`}
+											prefetch={true}
 											onClick={() => {
 												setOpen(false);
 											}}

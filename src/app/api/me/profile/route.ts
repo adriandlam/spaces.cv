@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
@@ -8,26 +9,12 @@ import type { PublicProfile, ProfileModalData } from "@/types/profile";
 
 // TODO: Add rate limiting for profile updates (maybe 5 updates / min / user)
 
-export async function GET(req: NextRequest) {
-  const requestId = crypto.randomUUID();
-
-  let user: PublicProfile | ProfileModalData | null = null;
-
-  try {
-    logger.debug({ requestId, type: "self" }, "Fetching self profile");
-
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      logger.warn({ requestId }, "Unauthorized profile access attempt");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    user = (await prisma.user.findUnique({
+// Cached function to fetch user profile
+const getCachedUserProfile = unstable_cache(
+  async (userId: string) => {
+    return (await prisma.user.findUnique({
       where: {
-        id: session.user.id,
+        id: userId,
       },
       select: {
         id: true,
@@ -57,8 +44,40 @@ export async function GET(req: NextRequest) {
         profilePreferences: true,
       },
     })) as ProfileModalData;
+  },
+  ["user-profile"],
+  {
+    revalidate: 300, // Cache for 5 minutes
+    tags: ["user-profile"],
+  }
+);
 
-    return NextResponse.json({ user });
+export async function GET() {
+  const requestId = crypto.randomUUID();
+
+  let user: PublicProfile | ProfileModalData | null = null;
+
+  try {
+    logger.debug({ requestId, type: "self" }, "Fetching self profile");
+
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      logger.warn({ requestId }, "Unauthorized profile access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    user = await getCachedUserProfile(session.user.id);
+
+    const response = NextResponse.json({ user });
+    response.headers.set(
+      "Cache-Control",
+      "private, s-maxage=300, stale-while-revalidate=600"
+    );
+
+    return response;
   } catch (error) {
     logger.error(
       {
@@ -137,14 +156,17 @@ export async function POST(req: NextRequest) {
       "Profile update data validated and sanitized"
     );
 
-    // Check if username is available
-    const { available } = await auth.api.isUsernameAvailable({
-      body: {
+    // Check if username is available by checking for existing user
+    const existingUser = await prisma.user.findUnique({
+      where: {
         username: sanitizedUsername,
+      },
+      select: {
+        id: true,
       },
     });
 
-    if (!available) {
+    if (existingUser && existingUser.id !== session.user.id) {
       logger.warn(
         {
           requestId,

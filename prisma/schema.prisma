@@ -54,6 +54,8 @@ model User {
 
   customStatus String?
 
+  upvotes Int @default(1)
+
   // Profile fields
   title    String? // What do you do?
   about    String? // About section

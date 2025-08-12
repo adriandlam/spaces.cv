@@ -25,6 +25,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       createdAt: new Date("2025-08-10T09:57:08.355Z"),
       updatedAt: new Date("2025-08-10T09:57:08.355Z"),
       onboardedAt: new Date("2025-08-10T09:57:08.355Z"),
+      upvotes: 129,
     },
   });
 
@@ -223,6 +224,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       createdAt: new Date("2025-08-11T10:00:00.000Z"),
       updatedAt: new Date("2025-08-11T10:00:00.000Z"),
       onboardedAt: new Date("2025-08-11T10:00:00.000Z"),
+      upvotes: 10,
     },
   });
 
