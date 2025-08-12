@@ -2,61 +2,51 @@
 
 import { ExternalArrow } from "@/components/icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
-	Command,
 	CommandDialog,
 	CommandEmpty,
 	CommandGroup,
 	CommandInput,
 	CommandItem,
 	CommandList,
-	CommandSeparator,
 	CommandShortcut,
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn, fetcher, debounce } from "@/lib/utils";
+import { cn, debounce } from "@/lib/utils";
 import type { PublicProfile } from "@/types/profile";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, CornerDownLeft, Loader } from "lucide-react";
+import { ChevronLeft, CornerDownLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import useSWR from "swr";
 
+const SUGGESTIONS = [
+	"Software engineers with React experience",
+	"Designers who work on mobile apps",
+	"People who studied at MIT",
+];
+
 export default function SearchModal() {
 	const [open, setOpen] = useState(true);
-	const [showLoading, setShowLoading] = useState(false);
 	const [aiMode, setAiMode] = useState(false);
 	const [pages, setPages] = useState<string[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<PublicProfile[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
+	const [currentSuggestion, setCurrentSuggestion] = useState(SUGGESTIONS[0]);
 	const page = pages[pages.length - 1];
 
 	const router = useRouter();
 
-	const { data, isLoading: isLoadingRecentProfiles } = useSWR<{
+	const { data } = useSWR<{
 		users: PublicProfile[];
-	}>("/api/profiles", fetcher, {
-		refreshInterval: 30000,
-		revalidateOnFocus: false,
-		dedupingInterval: 10000,
+	}>("/api/profiles?limit=10", {
+		refreshInterval: 5 * 60 * 1000,
+		revalidateIfStale: false,
 	});
-
-	useEffect(() => {
-		if (isLoadingRecentProfiles) {
-			const timer = setTimeout(() => setShowLoading(true), 200);
-			return () => clearTimeout(timer);
-		} else {
-			setShowLoading(false);
-		}
-	}, [isLoadingRecentProfiles]);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -91,7 +81,7 @@ export default function SearchModal() {
 
 	useHotkeys(
 		"esc",
-		(e) => {
+		() => {
 			if (pages.length > 0) {
 				setPages((pages) => pages.slice(0, -1));
 			} else {
@@ -126,7 +116,6 @@ export default function SearchModal() {
 				return;
 			}
 
-			setIsSearching(true);
 			try {
 				const response = await fetch(
 					`/api/search?q=${encodeURIComponent(query)}` +
@@ -134,23 +123,25 @@ export default function SearchModal() {
 				);
 				const data = await response.json();
 				setSearchResults(data.users || []);
-			} catch (error) {
+			} catch {
 				setSearchResults([]);
 			} finally {
 				setIsSearching(false);
 			}
 		}, 300),
-		[aiMode],
+		[],
 	);
 
-	// Trigger search when query or mode changes
+	// Trigger search when query changes
 	useEffect(() => {
 		if (searchQuery.trim()) {
+			setIsSearching(true);
 			debouncedSearch(searchQuery);
 		} else {
+			setIsSearching(false);
 			setSearchResults([]);
 		}
-	}, [searchQuery, aiMode, debouncedSearch]);
+	}, [searchQuery, debouncedSearch]);
 
 	// Clear search when switching modes
 	useEffect(() => {
@@ -159,6 +150,19 @@ export default function SearchModal() {
 			setSearchResults([]);
 		}
 	}, [aiMode]);
+
+	useEffect(() => {
+		if (aiMode && !searchQuery.trim()) {
+			const interval = setInterval(() => {
+				setCurrentSuggestion((prev) => {
+					const nextIndex = SUGGESTIONS.indexOf(prev) + 1;
+					return SUGGESTIONS[nextIndex % SUGGESTIONS.length];
+				});
+			}, 2000);
+
+			return () => clearInterval(interval);
+		}
+	}, [aiMode, searchQuery]);
 
 	// const onSubmit = async (data: EmailFormData) => {
 	// 	setIsSubmitting(true);
@@ -231,10 +235,24 @@ export default function SearchModal() {
 						</motion.button>
 					)}
 				</AnimatePresence>
+				{aiMode && !searchQuery.trim() && (
+					<div className="absolute text-sm top-1/2 -translate-y-1/2  pointer-events-none left-9">
+						<AnimatePresence mode="popLayout">
+							<motion.span
+								key={currentSuggestion}
+								initial={{ opacity: 0, filter: "blur(10px)" }}
+								animate={{ opacity: 1, filter: "blur(0px)" }}
+								exit={{ opacity: 0, filter: "blur(10px)" }}
+								transition={{ duration: 0.3, ease: "easeOut" }}
+								className="text-muted-foreground text-nowrap"
+							>
+								{currentSuggestion}
+							</motion.span>
+						</AnimatePresence>
+					</div>
+				)}
 				<CommandInput
-					placeholder={
-						aiMode ? "Describe a person..." : "Search for a person..."
-					}
+					placeholder={!aiMode ? "Search for a person..." : undefined}
 					ref={inputRef}
 					value={searchQuery}
 					onValueChange={setSearchQuery}
@@ -267,20 +285,53 @@ export default function SearchModal() {
 			</div>
 			<CommandList>
 				{!aiMode &&
-					!searchQuery.trim() &&
+					searchQuery.trim() &&
 					!isSearching &&
 					searchResults.length === 0 && (
 						<CommandEmpty>No results found for "{searchQuery}"</CommandEmpty>
 					)}
-
+				{/* {aiMode && !isSearching && !searchQuery.trim() && (
+					<CommandGroup heading="Try asking for...">
+						<div className="flex items-center gap-2">
+							<CommandItem
+								onSelect={() =>
+									setSearchQuery("Software engineers with React experience")
+								}
+								asChild
+							>
+								<Button variant="outline" size="sm">
+									<span>React software engineers</span>
+								</Button>
+							</CommandItem>
+							<CommandItem
+								onSelect={() =>
+									setSearchQuery("Designers who work on mobile apps")
+								}
+								asChild
+							>
+								<Button variant="outline" size="sm">
+									<span>Designers who work on mobile apps</span>
+								</Button>
+							</CommandItem>
+							<CommandItem
+								onSelect={() => setSearchQuery("people who studied at MIT")}
+								asChild
+							>
+								<Button variant="outline" size="sm">
+									<span>People who studied at MIT</span>
+								</Button>
+							</CommandItem>
+						</div>
+					</CommandGroup>
+				)} */}
 				{!page &&
-					!aiMode &&
+					aiMode &&
 					searchQuery.trim() &&
 					!isSearching &&
 					searchResults.length > 0 && (
 						<CommandGroup heading={`Search results (${searchResults.length})`}>
 							{searchResults.map((profile) => (
-								<CommandItem asChild className="group !pr-3">
+								<CommandItem key={profile.id} asChild className="group !pr-3">
 									<Link
 										href={`/profile/${profile.username}`}
 										onClick={() => {
@@ -312,7 +363,6 @@ export default function SearchModal() {
 							))}
 						</CommandGroup>
 					)}
-
 				{!page && !aiMode && !searchQuery.trim() && (
 					<>
 						{/* <CommandGroup heading="Actions">
@@ -365,7 +415,6 @@ export default function SearchModal() {
 						)}
 					</>
 				)}
-
 				{page === "projects" && (
 					<CommandGroup heading="Projects">
 						<CommandItem onSelect={() => console.log("Project A selected")}>
@@ -383,7 +432,6 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
-
 				{page === "teams" && (
 					<CommandGroup heading="Teams">
 						<CommandItem onSelect={() => console.log("Team 1 selected")}>
@@ -399,7 +447,6 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
-
 				{page === "settings" && (
 					<CommandGroup heading="Settings">
 						<CommandItem onSelect={() => console.log("Profile settings")}>
@@ -413,7 +460,6 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
-
 				{page === "create-project" && (
 					<CommandGroup heading="Create Project">
 						<CommandItem onSelect={() => console.log("Empty project")}>
@@ -427,7 +473,6 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
-
 				{page === "join-team" && (
 					<CommandGroup heading="Join Team">
 						<CommandItem onSelect={() => console.log("By invitation")}>
@@ -438,7 +483,6 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
-
 				{page === "theme" && (
 					<CommandGroup heading="Theme">
 						<CommandItem onSelect={() => console.log("Light theme")}>

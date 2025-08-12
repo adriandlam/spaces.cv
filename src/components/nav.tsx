@@ -41,11 +41,13 @@ export default function Nav() {
 	const { data: session } = useSession();
 	const router = useRouter();
 
+	router.prefetch("/search");
+	router.prefetch("/profile");
+
 	useHotkeys("slash", () => {
 		router.push("/search");
 	});
 
-	// TODO: also include not found page
 	if (pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)) {
 		return null;
 	}

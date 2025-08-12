@@ -1,18 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Home, Search, User } from "lucide-react";
-import Link from "next/link";
-import HomeHeader from "@/components/home-header";
-import Nav from "@/components/nav";
+import { SWRProvider } from "@/components/swr-provider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Button } from "@/components/ui/button";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -31,10 +22,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
 	children,
-	modal,
 }: Readonly<{
 	children: React.ReactNode;
-	modal: React.ReactNode;
 }>) {
 	return (
 		<html lang="en">
@@ -46,16 +35,9 @@ export default function RootLayout({
 					forcedTheme="dark"
 					disableTransitionOnChange
 				>
-					<TooltipProvider>
-						<div className="flex">
-							<Nav />
-							<div className="flex-1 px-6 py-4 flex flex-col gap-4">
-								<HomeHeader />
-								{children}
-							</div>
-						</div>
-						{modal}
-					</TooltipProvider>
+					<SWRProvider>
+						<TooltipProvider>{children}</TooltipProvider>
+					</SWRProvider>
 				</ThemeProvider>
 			</body>
 		</html>

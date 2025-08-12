@@ -181,7 +181,7 @@ export default function DomainsTab({
 									disabled={urlCopied || profilePreferences.hidden}
 									onClick={() => {
 										navigator.clipboard.writeText(
-											`${username}.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+											`${process.env.NEXT_PUBLIC_APP_DOMAIN}/${username}`,
 										);
 										setUrlCopied(true);
 									}}
@@ -202,12 +202,12 @@ export default function DomainsTab({
 										It&apos;s available at{" "}
 										<Link
 											prefetch={false}
-											href={`https://${username}.${process.env.NEXT_PUBLIC_APP_DOMAIN}`}
+											href={`https://${process.env.NEXT_PUBLIC_APP_DOMAIN}/${username}`}
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-foreground flex items-start gap-0.5 font-mono hover:underline underline-offset-2 duration-200 ease-out"
 										>
-											{username}.{process.env.NEXT_PUBLIC_APP_DOMAIN}
+											{process.env.NEXT_PUBLIC_APP_DOMAIN}/{username}
 											<ExternalArrow className="size-3" />
 										</Link>
 									</>

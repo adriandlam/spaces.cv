@@ -1,30 +1,9 @@
-"use client";
-
-import { X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useHotkeys } from "react-hotkeys-hook";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
-	const router = useRouter();
-
-	useHotkeys("esc", () => {
-		handleClose();
-	});
-
-	const handleClose = () => {
-		router.back();
-	};
-
 	return (
 		<div className="bg-background/50 backdrop-blur-sm fixed inset-0 flex justify-center items-center">
-			<div className="absolute top-4 left-4">
-				<Button variant="outline" size="sm" onClick={handleClose}>
-					<X />
-					Close
-				</Button>
-			</div>
 			<div className="max-w-md mx-auto px-6 text-center space-y-6">
 				<div className="space-y-2">
 					<h1 className="text-6xl tracking-tighter">404</h1>

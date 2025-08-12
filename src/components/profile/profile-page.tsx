@@ -29,7 +29,7 @@ export default function ProfilePage({
 	session,
 }: {
 	profile: PublicProfile;
-	session: Session | null;
+	session?: Session | null;
 }) {
 	const [showUsername, setShowUsername] = useState<boolean | null>(null);
 
@@ -44,7 +44,7 @@ export default function ProfilePage({
 					"font-mono",
 			)}
 		>
-			{session?.userId !== profile?.id && <ProfileActions />}
+			{session && session?.userId !== profile?.id && <ProfileActions />}
 			<motion.div
 				className="space-y-10"
 				initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
@@ -55,6 +55,7 @@ export default function ProfilePage({
 				<div className="flex items-center gap-4">
 					<div className="relative">
 						<Avatar className="size-20 border">
+							<AvatarImage src={profile?.image ?? undefined} />
 							<AvatarFallback className="text-xl tracking-wider uppercase">
 								{profile?.name.split(" ").map((name) => name.charAt(0))}
 							</AvatarFallback>

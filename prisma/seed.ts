@@ -11,6 +11,7 @@ async function main() {
       name: "Adrian Lam",
       email: "me@adriandlam.com",
       emailVerified: true,
+      image: `https://${process.env.R2_CUSTOM_DOMAIN}/profile-images/Xz3oy0pBhC50C2I8SMbXGqw4GvmjL8vJ/avatar.png`,
       username: "adrianlam",
       onboarded: true,
       title: "Math student at UBC. I like AI, building, and learning.",

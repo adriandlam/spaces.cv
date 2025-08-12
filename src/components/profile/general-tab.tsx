@@ -3,8 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, CircleCheck, CircleX } from "lucide-react";
-import normalizeUrl from "normalize-url";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
+import { useDropzone } from "react-dropzone";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;
@@ -65,6 +65,21 @@ export default function GeneralTab({
 		}
 	}, [defaultValues, generalForm]);
 
+	const onDrop = useCallback(async (acceptedFiles: File[]) => {
+		const formData = new FormData();
+		formData.append("image", acceptedFiles[0]);
+
+		try {
+			fetch("/api/me/profile/image", {
+				method: "PUT",
+				body: formData,
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	}, []);
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
 	return (
 		<Form {...generalForm}>
 			<form
@@ -73,15 +88,18 @@ export default function GeneralTab({
 				className="space-y-4"
 			>
 				<div className="flex items-center gap-8">
-					<Avatar className="ring ring-border size-20 mt-2.5">
-						<AvatarImage src={userImage ?? undefined} alt={userName ?? ""} />
-						<AvatarFallback>
-							<Camera
-								strokeWidth={1.5}
-								className="size-6 text-muted-foreground"
-							/>
-						</AvatarFallback>
-					</Avatar>
+					<div {...getRootProps()}>
+						<Avatar className="ring ring-border size-20 mt-2.5">
+							<AvatarImage src={userImage ?? undefined} alt={userName ?? ""} />
+							<AvatarFallback>
+								<Camera
+									strokeWidth={1.5}
+									className="size-6 text-muted-foreground"
+								/>
+							</AvatarFallback>
+						</Avatar>
+						<input {...getInputProps()} />
+					</div>
 					<div className="space-y-3 w-full">
 						<FormField
 							control={generalForm.control}

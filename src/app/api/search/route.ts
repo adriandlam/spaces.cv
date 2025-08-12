@@ -1,7 +1,7 @@
 import logger from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { embed } from "ai";
+import { embed, generateText } from "ai";
 import { gateway } from "@ai-sdk/gateway";
 
 export async function GET(req: NextRequest) {
@@ -69,6 +69,10 @@ export async function GET(req: NextRequest) {
       )
       SELECT id, name, username, image, "customStatus", semantic_score, fulltext_score, rrf_score
       FROM combined
+      WHERE 
+        -- Thresholds for AI search with enhanced queries
+        (semantic_score >= 0.2 OR fulltext_score > 0.05 OR rrf_score >= 0.015)
+        AND (semantic_score >= 0.1 OR fulltext_score > 0)  -- Minimum relevance threshold
       ORDER BY rrf_score DESC, semantic_score DESC, fulltext_score DESC
       LIMIT 50
     `;
@@ -79,15 +83,11 @@ export async function GET(req: NextRequest) {
     let users = await prisma.$queryRaw`
       SELECT 
         id, name, username, image, "customStatus",
-        ts_rank("searchVector", to_tsquery('english', ${
-          query + ":*"
-        })) as fulltext_score
+        ts_rank("searchVector", plainto_tsquery(${query})) as fulltext_score
       FROM "user"
       WHERE "searchVector" IS NOT NULL 
-        AND "searchVector" @@ to_tsquery('english', ${query + ":*"})
-      ORDER BY ts_rank("searchVector", to_tsquery('english', ${
-        query + ":*"
-      })) DESC
+        AND "searchVector" @@ plainto_tsquery(${query})
+      ORDER BY ts_rank("searchVector", plainto_tsquery(${query})) DESC
       LIMIT 50
     `;
 

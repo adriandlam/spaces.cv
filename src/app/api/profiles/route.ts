@@ -1,20 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
 import logger from "@/lib/logger";
 import type { PublicProfile } from "@/types/profile";
 
 // TODO: Add rate limiting for profile updates (maybe 5 updates / min / user)
 
-export async function GET(req: NextRequest) {
-  const requestId = crypto.randomUUID();
-
-  try {
-    logger.debug({ requestId, type: "public" }, "Fetching public profiles");
-
-    const searchParams = req.nextUrl.searchParams;
-    const sort = searchParams.get("sort") as "recent" | "oldest" | null;
-
-    const users: PublicProfile[] = (await prisma.user.findMany({
+// Cached function to fetch profiles
+const getCachedProfiles = unstable_cache(
+  async (sort: string, limit: number) => {
+    return (await prisma.user.findMany({
       select: {
         id: true,
         name: true,
@@ -29,9 +24,36 @@ export async function GET(req: NextRequest) {
       orderBy: {
         createdAt: sort !== "oldest" ? "desc" : "asc",
       },
+      take: limit,
     })) as PublicProfile[];
+  },
+  ["profiles"],
+  {
+    revalidate: 60,
+    tags: ["profiles"],
+  }
+);
 
-    return NextResponse.json({ users });
+export async function GET(req: NextRequest) {
+  const requestId = crypto.randomUUID();
+
+  try {
+    logger.debug({ requestId, type: "public" }, "Fetching public profiles");
+
+    const searchParams = req.nextUrl.searchParams;
+    const sort = searchParams.get("sort") as "recent" | "oldest" | null;
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? Math.min(parseInt(limitParam, 10), 100) : 20;
+
+    const users = await getCachedProfiles(sort || "recent", limit);
+
+    const response = NextResponse.json({ users });
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=300"
+    );
+
+    return response;
   } catch (error) {
     logger.error(
       {
