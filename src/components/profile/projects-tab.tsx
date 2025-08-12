@@ -51,7 +51,7 @@ export default function ProjectsTab({
 			description: "",
 			company: "",
 			link: "",
-			collaborators: "",
+			collaborators: [],
 		},
 	});
 

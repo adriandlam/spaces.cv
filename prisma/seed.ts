@@ -506,7 +506,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
         to: project.to,
         description: project.description,
         skills: project.skills,
-        collaborators: project.collaborators || [],
+        collaborators: project.collaborators,
         userId: shubUser.id,
       },
     });

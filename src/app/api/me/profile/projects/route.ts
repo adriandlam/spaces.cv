@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         description: description.trim(),
         company: company?.trim() || null,
         link: link?.trim() || null,
-        collaborators: collaborators?.trim() || null,
+        collaborators: collaborators,
         userId: session.user.id,
       },
     });

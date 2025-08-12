@@ -93,7 +93,7 @@ export async function PUT(
         description: description.trim(),
         company: company?.trim() || null,
         link: link?.trim() || null,
-        collaborators: collaborators?.trim() || null,
+        collaborators: collaborators,
       },
     });
 
