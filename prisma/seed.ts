@@ -148,7 +148,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
         "FastAPI",
         "Python",
       ],
-      collaborators: "Shreyas Goyal, Yash Arya, Daniel Lima",
+      collaborators: ["Shreyas Goyal", "Yash Arya", "Daniel Lima"],
     },
     {
       id: "merin",
@@ -158,7 +158,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       description:
         "An intelligent email platform reimagined for the AI era, designed to help users process emails faster with AI-powered assistance.",
       skills: ["Next.js", "Supabase", "TypeScript", "TailwindCSS"],
-      collaborators: "Michael Han, Shubhaankar Sharma",
+      collaborators: ["Michael Han", "Shubhaankar Sharma"],
     },
     {
       id: "obsidian-vercel",
@@ -177,7 +177,7 @@ When I'm not building or reflecting, I love venturing outdoors (preferably roadt
       description:
         "A fun platform that allows UBC students to test their innocence level with custom surveys for different faculties.",
       skills: ["Next.js", "TailwindCSS", "TypeScript", "Supabase"],
-      collaborators: "Ryan Haraki",
+      collaborators: ["Ryan Haraki"],
     },
   ];
 
@@ -381,6 +381,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Micrograd-like neural network library built from scratch in Python and NumPy. Implemented in numpy and python from scratch without inspiration from existing libraries. Currently supports ReLU and Softmax activations with cross-entropy loss. Future plans include GPU support for accelerated computation",
       skills: ["Python", "NumPy", "Neural Networks"],
+      collaborators: [],
     },
     {
       id: "obsidian-brain",
@@ -390,6 +391,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "MCP Server for Obsidian with BM25, NLP, and Vector Search capabilities. Advanced search and knowledge management system for Obsidian notes",
       skills: ["Python", "NLP", "Vector Search", "MCP", "BM25 Search"],
+      collaborators: [],
     },
     {
       id: "doomsday-messenger",
@@ -399,6 +401,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "LoRa mesh network for end-to-end encrypted messaging. Decentralized communication system for scenarios without internet infrastructure. Built for emergency and off-grid communication",
       skills: ["LoRa", "Arduino", "Soldering", "C"],
+      collaborators: [],
     },
     {
       id: "peersafe",
@@ -408,6 +411,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "P2P end-to-end encrypted file storage with Shamir key splitting. Distributed file storage system across multiple peers. Focuses on security and redundancy",
       skills: ["Go", "P2P", "Cryptography", "Shamir Key Splitting"],
+      collaborators: [],
     },
     {
       id: "rfs-blockchain",
@@ -417,6 +421,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Distributed file system on blockchain built from scratch. Custom blockchain implementation for decentralized file storage. Includes consensus mechanisms and file integrity guarantees",
       skills: ["Go", "Blockchain"],
+      collaborators: [],
     },
     {
       id: "solo",
@@ -426,6 +431,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Decentralized marketplace to collect limited edition pre-releases signed by artists. Part of buildspace nights and weekends S2. Focus on artist-fan connections through blockchain collectibles",
       skills: ["Solidity", "Web3", "React", "Go"],
+      collaborators: [],
     },
     {
       id: "simpl-ai",
@@ -435,6 +441,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "2nd place at Hack the Valley UofT hackathon. Document simplification using BART transformer model. AI-powered tool for better readability and comprehension",
       skills: ["Python", "NLP", "BART", "React", "FastAPI"],
+      collaborators: [],
     },
     {
       id: "authdeck",
@@ -444,6 +451,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Decentralized identity verification based on reputation scores. Two-way solution to verify humanity without losing anonymity. EthIndia grantee ($5k) and top project at buildspace S1 demo day",
       skills: ["Solidity", "Web3", "TypeScript"],
+      collaborators: [],
     },
     {
       id: "timathon-website",
@@ -453,6 +461,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Built Django website for hosting hackathons in TWT Discord server (36k+ members). Community collaboration project with multiple developers. Hosted hackathons sponsored by repl.it and AlgoExpert",
       skills: ["Django", "Python"],
+      collaborators: [],
     },
     {
       id: "p2p-ping-pong",
@@ -462,6 +471,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Built multiplayer ping pong game from scratch using Pygame. Implemented P2P networking using only Python built-in libraries",
       skills: ["Python", "Pygame"],
+      collaborators: [],
     },
     {
       id: "line-follower-robot",
@@ -471,6 +481,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Built at age 13 using Arduino, LDR sensors, and ultrasonic sensors. Robot follows black lines and avoids obstacles in its path",
       skills: ["Arduino", "C"],
+      collaborators: [],
     },
     {
       id: "plant-watering-system",
@@ -480,6 +491,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
       description:
         "Built at age 13 using Arduino and conductivity sensors. Measures soil moisture levels and automatically waters plants. Used motor to intake water from bottle when soil is dry",
       skills: ["Arduino", "C"],
+      collaborators: [],
     },
   ];
 
@@ -494,7 +506,7 @@ Also :p other than this, I'm a huge cinephile and music nerd. I play guitar and 
         to: project.to,
         description: project.description,
         skills: project.skills,
-        collaborators: project.collaborators ?? [],
+        collaborators: project.collaborators || [],
         userId: shubUser.id,
       },
     });
