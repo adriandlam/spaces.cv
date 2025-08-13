@@ -41,6 +41,7 @@ export interface PublicProfile {
   contacts: Contact[];
   customStatus: string | null;
   profilePreferences: ProfilePreferences;
+  upvotes: number;
 }
 
 export interface ProfileModalData {

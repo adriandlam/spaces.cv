@@ -327,7 +327,6 @@ export default function SearchModal() {
 					</CommandGroup>
 				)} */}
 				{!page &&
-					aiMode &&
 					searchQuery.trim() &&
 					!isSearching &&
 					searchResults.length > 0 && (

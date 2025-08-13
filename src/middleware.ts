@@ -7,9 +7,13 @@ export async function middleware(request: NextRequest) {
   // THIS IS NOT SECURE!
   // This is the recommended approach to optimistically redirect users
   // We recommend handling auth checks in each page/route
-  if (!sessionCookie && request.nextUrl.pathname !== "/sign-in") {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
+  // if (
+  //   !sessionCookie &&
+  //   request.nextUrl.pathname !== "/sign-in" &&
+  //   request.nextUrl.pathname !== "/"
+  // ) {
+  //   return NextResponse.redirect(new URL("/sign-in", request.url));
+  // }
 
   return NextResponse.next();
 }

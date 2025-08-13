@@ -18,6 +18,7 @@ import {
 	ThumbsUp,
 	Trash,
 	User,
+	UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
@@ -61,8 +62,12 @@ export default function ProfilePage({
 					"font-mono",
 			)}
 		>
-			<ProfileActions contactHref={profile?.contacts[0]?.href || ""} />
-			{/* {session && session?.userId !== profile?.id && <ProfileActions />} */}
+			{session && session?.userId !== profile?.id && (
+				<ProfileActions
+					upvotes={profile?.upvotes}
+					contactHref={profile?.contacts[0]?.href || ""}
+				/>
+			)}
 			<motion.div
 				className="space-y-10"
 				initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
@@ -71,7 +76,7 @@ export default function ProfilePage({
 				transition={{ duration: 0.2, ease: "easeOut" }}
 			>
 				<div className="flex items-center gap-4">
-					{session && (
+					{session && session?.userId !== profile?.id && (
 						<div className="relative">
 							<Avatar className={cn("size-20", !profile?.image && "border")}>
 								{profile?.image && (
@@ -265,11 +270,17 @@ export default function ProfilePage({
 	);
 }
 
-function ProfileActions({ contactHref }: { contactHref: string }) {
+function ProfileActions({
+	upvotes,
+	contactHref,
+}: {
+	upvotes?: number;
+	contactHref: string;
+}) {
 	return (
-		<div className="h-10 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-0.5 rounded-full shadow-lg">
-			<Button size="sm" className="hover:cursor-pointer">
-				<User />
+		<div className="h-11 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-1.5 rounded-full shadow-lg z-10">
+			<Button size="sm" className="hover:cursor-pointer !px-4">
+				<UserPlus />
 				Follow
 			</Button>
 			<Button
@@ -291,7 +302,7 @@ function ProfileActions({ contactHref }: { contactHref: string }) {
 				>
 					<ThumbsUp />
 				</Button>
-				<span className="text-xs">10</span>
+				<span className="text-xs">{upvotes ?? 1}</span>
 				<Button
 					variant="ghost"
 					className="rounded-full w-8 h-8 hover:!bg-background hover:text-orange-600 hover:cursor-pointer"

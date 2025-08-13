@@ -19,7 +19,7 @@ export default async function ProfileLayout({
 
 	return (
 		<div className="flex">
-			{!isDirectAccess && <Nav />}
+			{!isDirectAccess && referer && <Nav />}
 			<div className="max-w-2xl w-full mx-auto py-18">{children}</div>
 		</div>
 	);

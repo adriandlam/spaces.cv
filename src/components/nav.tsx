@@ -62,10 +62,6 @@ export default function Nav() {
 		router.push("/search");
 	});
 
-	if (pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)) {
-		return null;
-	}
-
 	return (
 		<nav className="sticky top-0 h-screen border-r border-y px-3 flex justify-center items-center flex-col gap-4 py-4 rounded-r-2xl">
 			<div>

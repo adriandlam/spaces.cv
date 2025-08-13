@@ -127,6 +127,10 @@ export const auth = betterAuth({
         defaultValue: null,
         input: true,
       },
+      upvotes: {
+        type: "number",
+        defaultValue: 1,
+      },
     },
   },
 });

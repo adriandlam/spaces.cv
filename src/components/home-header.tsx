@@ -29,15 +29,6 @@ import { Input } from "./ui/input";
 export default function HomeHeader() {
 	const { data: session } = useSession();
 
-	const pathname = usePathname();
-
-	if (
-		pathname.includes("/profile/") ||
-		pathname.includes(`.${process.env.NEXT_PUBLIC_APP_DOMAIN}`)
-	) {
-		return null;
-	}
-
 	return (
 		<header className="flex justify-center items-center">
 			{/* <ul className="flex gap-8 text-sm ml-auto"> */}
