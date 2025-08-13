@@ -130,3 +130,5 @@ export const auth = betterAuth({
     },
   },
 });
+
+export type Session = Awaited<ReturnType<typeof auth.api.getSession>>;

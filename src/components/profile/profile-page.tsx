@@ -1,6 +1,5 @@
 "use client";
 
-import type { Session } from "better-auth";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	Ban,
@@ -15,6 +14,8 @@ import {
 	Plus,
 	Share,
 	SmilePlus,
+	ThumbsDown,
+	ThumbsUp,
 	Trash,
 	User,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+import type { Session } from "better-auth";
 
 import { contactTypeLabels } from "./contacts-tab";
 import {
@@ -36,6 +38,7 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
 
 export default function ProfilePage({
@@ -286,14 +289,14 @@ function ProfileActions({ contactHref }: { contactHref: string }) {
 					variant="ghost"
 					className="rounded-full w-8 h-8 hover:!bg-background hover:text-blue-600 hover:cursor-pointer"
 				>
-					<Plus />
+					<ThumbsUp />
 				</Button>
 				<span className="text-xs">10</span>
 				<Button
 					variant="ghost"
 					className="rounded-full w-8 h-8 hover:!bg-background hover:text-orange-600 hover:cursor-pointer"
 				>
-					<Trash />
+					<ThumbsDown />
 				</Button>
 			</div>
 			<Separator orientation="vertical" className="max-h-4 bg-input/75" />

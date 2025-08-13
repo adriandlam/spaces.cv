@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,111 +8,52 @@ import {
 	DialogTitle,
 	DialogFooter,
 	DialogClose,
+	DialogDescription,
 } from "@/components/ui/dialog";
-import { AnimatePresence, motion } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { CircleX, CircleCheck, Loader } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
-	Form,
-	FormControl,
-	FormDescription,
-	FormField,
-	FormItem,
-	FormMessage,
-} from "@/components/ui/form";
-import Link from "next/link";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { authClient, signIn } from "@/lib/auth-client";
-import { GitHubIcon, GoogleIcon } from "@/components/icons";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
-const emailFormSchema = z.object({
-	email: z
-		.email("Please enter a valid email address")
-		.min(1, "Email is required"),
-});
-
-type EmailFormData = z.infer<typeof emailFormSchema>;
-
 export default function SettingsModal() {
-	const [step, setStep] = useState(0);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [submitError, setSubmitError] = useState<string | null>(null);
-
 	const router = useRouter();
-
-	const form = useForm<EmailFormData>({
-		resolver: zodResolver(emailFormSchema),
-		mode: "onChange",
-		defaultValues: {
-			email: "",
-		},
-	});
-
-	const {
-		handleSubmit,
-		formState: { isValid },
-		watch,
-		reset,
-	} = form;
-	const emailValue = watch("email", "");
-
-	const onSubmit = async (data: EmailFormData) => {
-		setIsSubmitting(true);
-		setSubmitError(null);
-
-		try {
-			const { error } = await authClient.signIn.magicLink({
-				email: data.email,
-				name: "",
-				callbackURL: "/",
-				newUserCallbackURL: "/profile",
-				errorCallbackURL: "/auth/error",
-			});
-
-			if (error) {
-				setSubmitError(
-					error.message || "An error occurred while sending the magic link",
-				);
-				setIsSubmitting(false);
-				return;
-			}
-
-			setStep(2);
-		} catch {
-			setSubmitError("An unexpected error occurred. Please try again.");
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
-
-	const resetForm = () => {
-		reset();
-		setStep(0);
-		setSubmitError(null);
-		setIsSubmitting(false);
-	};
+	const { theme, setTheme } = useTheme();
 
 	return (
 		<Dialog
 			defaultOpen
 			onOpenChange={(open) => {
 				if (!open) {
-					resetForm();
 					router.back();
 				}
 			}}
 		>
 			<DialogContent
-				className="!max-w-sm h-[16rem] overflow-hidden"
+				className="!max-w-md overflow-hidden"
 				showCloseButton={false}
 			>
 				<DialogHeader>
 					<DialogTitle>Settings</DialogTitle>
-					stuff here
+					<DialogDescription>
+						Manage your account settings and preferences
+					</DialogDescription>
+					{/* <div className="mt-6">
+						<div className="flex items-center justify-between">
+							<div className="space-y-1">
+								<Label className="text-foreground">Delete Account</Label>
+								<p className="text-sm text-muted-foreground">
+									Permanently delete your account and all associated data
+								</p>
+							</div>
+							<Button variant="destructive">Delete Account</Button>
+						</div>
+					</div> */}
 				</DialogHeader>
 			</DialogContent>
 		</Dialog>

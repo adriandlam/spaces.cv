@@ -13,12 +13,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/auth-client";
 import { cn, fetcher } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
 import { GitHubIcon } from "./icons";
 import { useEffect } from "react";
 import { preload } from "swr";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "./ui/dialog";
 
 const navItems = [
 	{
@@ -62,7 +69,7 @@ export default function Nav() {
 	return (
 		<nav className="sticky top-0 h-screen border-r border-y px-3 flex justify-center items-center flex-col gap-4 py-4 rounded-r-2xl">
 			<div>
-				<Button variant="outline" size="icon" asChild>
+				<Button variant="secondary" size="icon" asChild>
 					<Link
 						target="_blank"
 						rel="noopener noreferrer"
@@ -98,6 +105,9 @@ export default function Nav() {
 					<DropdownMenuTrigger asChild>
 						<button type="button" className="cursor-pointer">
 							<Avatar className="size-9 border">
+								{session?.user.image && (
+									<AvatarImage src={session.user.image} />
+								)}
 								<AvatarFallback className="text-sm">
 									{session?.user.name.split(" ").map((name) => name.charAt(0))}
 								</AvatarFallback>
@@ -105,7 +115,6 @@ export default function Nav() {
 						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<DropdownMenuItem>Invite a friend</DropdownMenuItem>
 						<DropdownMenuItem asChild>
 							<Link href="/settings" prefetch={true}>
 								Settings
