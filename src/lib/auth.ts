@@ -4,6 +4,7 @@ import { magicLink, username } from "better-auth/plugins";
 import { inngest } from "./inngest/client";
 import prisma from "./prisma";
 import resend from "./resend";
+import { cookies } from "next/headers";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -23,6 +24,34 @@ export const auth = betterAuth({
               theme: "DARK",
             },
           });
+
+          const inviteReferrer = await getInviteReferrer();
+          if (inviteReferrer) {
+            const inviter = await prisma.user.update({
+              where: { inviteCode: inviteReferrer },
+              data: {
+                invitedUsers: {
+                  connect: {
+                    id: user.id,
+                  },
+                },
+              },
+            });
+
+            if (inviter && inviter.id !== user.id) {
+              await prisma.user.update({
+                where: { id: inviter.id },
+                data: {
+                  invitedById: inviter.id,
+                  inviteCount: {
+                    increment: 1,
+                  },
+                },
+              });
+
+              await clearInviteReferrer();
+            }
+          }
         },
       },
       update: {
@@ -131,8 +160,34 @@ export const auth = betterAuth({
         type: "number",
         defaultValue: 1,
       },
+      inviteCount: {
+        type: "number",
+        defaultValue: 0,
+      },
+      inviteCode: {
+        type: "string",
+        defaultValue: null,
+      },
     },
   },
 });
 
 export type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
+
+async function getInviteReferrer() {
+  try {
+    const cookieStore = await cookies();
+    return cookieStore.get("invite_referrer")?.value;
+  } catch {
+    return null;
+  }
+}
+
+async function clearInviteReferrer() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete("invite_referrer");
+  } catch {
+    return;
+  }
+}

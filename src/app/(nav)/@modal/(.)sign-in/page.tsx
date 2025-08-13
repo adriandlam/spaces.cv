@@ -26,7 +26,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient, signIn, useSession } from "@/lib/auth-client";
-import { GitHubIcon, GoogleIcon } from "@/components/icons";
+import { ExternalArrow, GitHubIcon, GoogleIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 
 const emailFormSchema = z.object({
@@ -104,20 +104,20 @@ export default function SignInModal() {
 			defaultOpen={!session}
 			onOpenChange={(open) => {
 				if (!open) {
-					resetForm();
+					// resetForm();
 					router.push("/");
 				}
 			}}
 		>
 			<DialogContent
-				className="!max-w-sm h-[16rem] overflow-hidden"
+				className="!max-w-sm h-[17rem] overflow-hidden"
 				showCloseButton={false}
 			>
-				<AnimatePresence mode="popLayout">
+				<AnimatePresence mode="popLayout" initial={false}>
 					{step === 0 && (
 						<motion.div
 							key="auth-options"
-							initial={{ x: step !== 0 ? "-125%" : 0 }}
+							initial={{ x: "-125%" }}
 							animate={{ x: 0 }}
 							exit={{ x: "-125%" }}
 							transition={{
@@ -127,25 +127,25 @@ export default function SignInModal() {
 						>
 							<DialogHeader>
 								<DialogTitle>Create a new profile</DialogTitle>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-muted-foreground mt-2">
 									By continuing you agree to our{" "}
 									<Link
 										href="/terms"
-										className="underline underline-offset-3 text-foreground"
+										className="hover:underline underline-offset-3 text-foreground"
 									>
 										terms of service
 									</Link>{" "}
 									and{" "}
 									<Link
 										href="/privacy"
-										className="underline underline-offset-3 text-foreground"
+										className="hover:underline underline-offset-3 text-foreground"
 									>
 										privacy policy
 									</Link>
 									.
 								</p>
 							</DialogHeader>
-							<div className="flex flex-col gap-2 mt-4">
+							<div className="flex flex-col gap-2 mt-6">
 								<Button
 									variant="secondary"
 									onClick={() =>

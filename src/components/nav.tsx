@@ -11,7 +11,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import { cn, fetcher } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -96,31 +96,58 @@ export default function Nav() {
 					</Tooltip>
 				))}
 			</div>
-			<div>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button type="button" className="cursor-pointer">
-							<Avatar className="size-9 border">
-								{session?.user.image && (
-									<AvatarImage src={session.user.image} />
-								)}
-								<AvatarFallback className="text-sm">
-									{session?.user.name.split(" ").map((name) => name.charAt(0))}
-								</AvatarFallback>
-							</Avatar>
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent>
-						<DropdownMenuItem asChild>
-							<Link href="/settings" prefetch={true}>
-								Settings
-							</Link>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>Logout</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
+			{session && (
+				<div>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button type="button" className="cursor-pointer">
+								<Avatar className="size-9 border">
+									{session?.user.image && (
+										<AvatarImage src={session.user.image} />
+									)}
+									<AvatarFallback className="text-sm">
+										{session?.user.name
+											.split(" ")
+											.map((name) => name.charAt(0))}
+									</AvatarFallback>
+								</Avatar>
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent>
+							<DropdownMenuItem asChild>
+								<Link href="/settings">Settings</Link>
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem asChild>
+								<Link href="https://github.com/adriandlam/spaces.cv/issues">
+									Send feedback
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link href="/terms">Terms of Service</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link href="/privacy">Privacy Policy</Link>
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="text-destructive hover:!text-destructive"
+								onClick={() =>
+									signOut({
+										fetchOptions: {
+											onSuccess: () => {
+												router.push("/");
+											},
+										},
+									})
+								}
+							>
+								Logout
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			)}
 		</nav>
 	);
 }

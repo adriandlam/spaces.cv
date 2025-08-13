@@ -19,7 +19,7 @@ export default function NotFound() {
 						<Link href="/">Go home</Link>
 					</Button>
 					<Button asChild variant="secondary">
-						<Link href="/search">Search profiles</Link>
+						<Link href="mailto:hello@spaces.cv">Contact support</Link>
 					</Button>
 				</div>
 			</div>

@@ -127,9 +127,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, hidden } = body;
+    const { id, hidden, value, type } = body;
 
-    if (!id || typeof hidden !== "boolean") {
+    if (!id) {
       logger.warn(
         {
           requestId,
@@ -140,7 +140,71 @@ export async function PATCH(req: NextRequest) {
       );
 
       return NextResponse.json(
-        { error: "Invalid data: id and hidden (boolean) are required" },
+        { error: "Invalid data: id is required" },
+        { status: 400 }
+      );
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+
+    // Handle hiding/showing contact
+    if (typeof hidden === "boolean") {
+      updateData.hidden = hidden;
+    }
+
+    // Handle content updates (value and/or type)
+    if (value !== undefined || type !== undefined) {
+      // Get current contact to determine type if not provided
+      let contactType = type as ContactType;
+      if (value !== undefined && type === undefined) {
+        const currentContact = await prisma.contact.findFirst({
+          where: { id, userId: session.user.id },
+          select: { type: true }
+        });
+        contactType = currentContact?.type as ContactType;
+      }
+
+      if (value !== undefined) {
+        const trimmedValue = value.trim();
+        
+        // For displaying
+        const displayValue =
+          contactType === "EMAIL" || contactType === "PHONE"
+            ? trimmedValue
+            : normalizeUrl(trimmedValue, {
+                stripProtocol: true,
+                removeQueryParameters: true,
+                stripWWW: true,
+                removeTrailingSlash: true,
+              });
+
+        // For href
+        const hrefValue =
+          contactType === "EMAIL"
+            ? `mailto:${trimmedValue}`
+            : contactType === "PHONE"
+            ? `tel:${trimmedValue}`
+            : normalizeUrl(trimmedValue, {
+                defaultProtocol: "https",
+                forceHttps: true,
+                removeQueryParameters: true,
+                removeTrailingSlash: true,
+              });
+
+        updateData.value = displayValue;
+        updateData.href = hrefValue;
+      }
+
+      if (type !== undefined) {
+        updateData.type = type as ContactType;
+      }
+    }
+
+    // Ensure we have something to update
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "No valid update fields provided" },
         { status: 400 }
       );
     }
@@ -150,9 +214,7 @@ export async function PATCH(req: NextRequest) {
         id,
         userId: session.user.id,
       },
-      data: {
-        hidden,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({

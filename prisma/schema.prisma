@@ -41,14 +41,14 @@ enum Theme {
 model User {
   id            String    @id
   name          String
-  email         String
+  email         String    @unique
   emailVerified Boolean
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
-  username      String?
+  username      String?   @unique
   onboarded     Boolean   @default(false)
   onboardedAt   DateTime?
 
@@ -83,8 +83,13 @@ model User {
 
   profileOrder String[] @default(["experience", "education", "projects", "contacts"])
 
-  @@unique([email])
-  @@unique([username])
+  // Invites
+  inviteCode   String  @unique @default(cuid())
+  invitedById  String?
+  invitedBy    User?   @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  invitedUsers User[]  @relation("InvitedBy")
+  inviteCount  Int     @default(0)
+
   @@index(fields: [searchableText(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("user")
 }

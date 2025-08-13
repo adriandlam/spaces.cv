@@ -128,11 +128,9 @@ function InviteFriendDialog({ user }: { user: User }) {
 					<DialogTitle className="text-center text-2xl">
 						Spaces are better with friends.
 					</DialogTitle>
-					<DialogDescription className="text-center space-y-2">
-						<div className="max-w-md mx-auto">
-							Invite 5 friends to join Spaces and unlock custom domains for your
-							space, and early access pricing (beta pricing forever).
-						</div>
+					<DialogDescription className="text-center space-y-2 max-w-md mx-auto">
+						Invite 5 friends to join Spaces and unlock custom domains for your
+						space, and early access pricing (beta pricing forever).
 					</DialogDescription>
 					<div className="w-full max-w-xs mx-auto">
 						<div>
@@ -143,7 +141,7 @@ function InviteFriendDialog({ user }: { user: User }) {
 							>
 								<Input
 									readOnly
-									value={`${url}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`}
+									value={url}
 									className={cn(
 										"rounded-lg w-80 pr-20 truncate group-hover:!bg-accent/90 transition-colors duration-200 ease-out focus-visible:ring-0 hover:cursor-pointer text-foreground/75 pointer-events-none border border-input/25",
 										urlCopied && "!bg-accent/90",
