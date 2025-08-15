@@ -20,8 +20,6 @@ import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
 import { useDropzone } from "react-dropzone";
-import Image from "next/image";
-import normalizeUrl from "normalize-url";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;
@@ -91,8 +89,14 @@ export default function GeneralTab({
 				className="space-y-4"
 			>
 				<div className="flex items-center gap-8">
-					<div {...getRootProps()} className="hover:cursor-pointer">
-						<Avatar className="ring ring-border size-20 mt-2.5">
+					<div
+						{...getRootProps()}
+						className="hover:cursor-pointer group mt-2.5"
+					>
+						<Avatar className="size-20">
+							<div className="absolute group-hover:bg-background/35 w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out flex items-center justify-center text-foreground/75 group-hover:shadow-sm">
+								<Camera />
+							</div>
 							{userImage && (
 								<AvatarImage src={userImage} alt={userName ?? ""} />
 							)}

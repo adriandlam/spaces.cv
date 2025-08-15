@@ -224,14 +224,14 @@ export default function ContactsTab({
 				{contacts.length > 0 && (
 					<div>
 						{contacts.map((contact) => (
-							<div key={contact.id}>
+							<div key={contact.id} className="mt-1">
 								<div
 									className={cn(
 										"flex items-center gap-2 transition-all duration-200 ease-out",
 										contact.hidden && "opacity-50",
 									)}
 								>
-									<div className="w-40 mt-1">
+									<div className="w-40">
 										{editContactId === contact.id ? (
 											<Select
 												value={editingType}

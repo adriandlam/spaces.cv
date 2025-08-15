@@ -13,6 +13,8 @@ import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
+import normalizeUrl from "normalize-url";
+import { AnimatePresence } from "framer-motion";
 
 interface DomainsTabProps {
 	profilePreferences: ProfilePreferences;
@@ -38,6 +40,13 @@ export default function DomainsTab({
 			return () => clearTimeout(timeout);
 		}
 	}, [urlCopied]);
+
+	const publicUrl = `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}/${username}`;
+
+	const handleCopy = () => {
+		navigator.clipboard.writeText(publicUrl);
+		setUrlCopied(true);
+	};
 
 	const toggleProfileVisibility = async () => {
 		if (!profilePreferences) return;
@@ -91,6 +100,38 @@ export default function DomainsTab({
 					>
 						{/* URL Input Section */}
 						<div className="space-y-2">
+							<div>
+								<button
+									className="relative group mx-auto w-full max-w-sm"
+									onClick={handleCopy}
+									type="button"
+								>
+									<Input
+										readOnly
+										value={normalizeUrl(publicUrl, {
+											stripProtocol: true,
+											removeTrailingSlash: true,
+										})}
+										className={cn(
+											"rounded-lg pr-20 truncate group-hover:!bg-accent/90 transition-colors duration-200 ease-out focus-visible:ring-0 hover:cursor-pointer text-foreground/75 pointer-events-none border border-input/25",
+											urlCopied && "!bg-accent/90",
+										)}
+									/>
+									<div
+										className={cn(
+											"gap-1.5 absolute right-3 top-1/2 -translate-y-1/2 h-7 pointer-events-none flex items-center justify-center",
+											urlCopied && "!opacity-100",
+										)}
+									>
+										{urlCopied ? (
+											<Check className="text-emerald-400 size-3.5" />
+										) : (
+											<Copy className="size-3.5" />
+										)}
+									</div>
+								</button>
+							</div>
+							{/* 
 							<div className="relative max-w-sm">
 								<div className="flex items-center h-9">
 									<Input
@@ -107,7 +148,7 @@ export default function DomainsTab({
 											htmlFor="profile-url"
 											className="font-mono text-sm tracking-tighter"
 										>
-											spaces.cv
+											{process.env.NEXT_PUBLIC_APP_DOMAIN}/{username}
 										</Label>
 									</div>
 								</div>
@@ -132,7 +173,7 @@ export default function DomainsTab({
 										<Copy className="size-3.5" />
 									)}
 								</Button>
-							</div>
+							</div> */}
 
 							<div className="text-xs text-muted-foreground ml-3 flex-nowrap flex whitespace-pre items-end">
 								{profilePreferences.hidden ? (
@@ -203,7 +244,7 @@ export default function DomainsTab({
 					<p className="text-sm text-muted-foreground">
 						Change the font family shown on{" "}
 						<span className="text-foreground">
-							{username}.{process.env.NEXT_PUBLIC_APP_DOMAIN}
+							{process.env.NEXT_PUBLIC_APP_DOMAIN}/{username}
 						</span>
 					</p>
 					<div className="flex items-center gap-5 pt-2 pb-2 px-1">

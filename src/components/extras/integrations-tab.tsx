@@ -1,5 +1,7 @@
 "use client";
 
+import { GitHubIcon } from "../icons";
+import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 
 export default function IntegrationsTab() {
@@ -15,7 +17,13 @@ export default function IntegrationsTab() {
 				</div>
 			</div>
 
-			<ScrollArea className="h-[65dvh] mt-8">hi</ScrollArea>
+			{/* <ScrollArea className="h-[65dvh] mt-8">
+				<div className="space-y-3">
+					<GitHubIcon className="size-4" />
+					<Label>GitHub</Label>
+					<p>Connect your GitHub account</p>
+				</div>
+			</ScrollArea> */}
 		</div>
 	);
 }
