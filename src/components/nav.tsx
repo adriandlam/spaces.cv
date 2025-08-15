@@ -3,7 +3,9 @@
 import { Home, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { preload } from "swr";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -13,12 +15,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn, fetcher } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Button } from "./ui/button";
 import { ExternalArrow, GitHubIcon } from "./icons";
-import { useEffect } from "react";
-import { preload } from "swr";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -26,6 +25,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "./ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const navItems = [
 	{

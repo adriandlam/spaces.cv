@@ -1,6 +1,7 @@
 "use client";
 
 import { Command as CommandPrimitive } from "cmdk";
+import { AnimatePresence, motion } from "framer-motion";
 import { Loader, SearchIcon } from "lucide-react";
 import type * as React from "react";
 import {
@@ -11,7 +12,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 
 function Command({
 	className,

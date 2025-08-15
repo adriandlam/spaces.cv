@@ -1,7 +1,9 @@
 "use client";
 
+import { AnimatePresence } from "framer-motion";
 import { Check, Copy, Eye, EyeOff, Loader, Plus } from "lucide-react";
 import Link from "next/link";
+import normalizeUrl from "normalize-url";
 import { useEffect, useState } from "react";
 import type { ProfilePreferences } from "@/app/generated/prisma";
 import { FontFamily } from "@/app/generated/prisma";
@@ -13,8 +15,6 @@ import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
-import normalizeUrl from "normalize-url";
-import { AnimatePresence } from "framer-motion";
 
 interface DomainsTabProps {
 	profilePreferences: ProfilePreferences;

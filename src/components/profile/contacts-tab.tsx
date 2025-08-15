@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Eye, EyeOff, Pencil, Plus, Trash, X } from "lucide-react";
 import Link from "next/link";
 import normalizeUrl from "normalize-url";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Contact, ContactType } from "@/app/generated/prisma";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,6 @@ import { contactSchema } from "@/lib/validations/profile";
 import type { ContactFormData } from "@/types/profile";
 import { ExternalArrow, getContactIcon } from "../icons";
 import { ScrollArea } from "../ui/scroll-area";
-import { useEffect, useRef, useState } from "react";
 
 interface ContactsTabProps {
 	contacts: Contact[];

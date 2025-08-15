@@ -1,5 +1,6 @@
 "use client";
 
+import type { Session } from "better-auth";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	Ban,
@@ -29,19 +30,17 @@ import type { PublicProfile } from "@/types/profile";
 import { ExternalArrow, getContactIcon } from "../icons";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Separator } from "../ui/separator";
-import type { Session } from "better-auth";
-
-import { contactTypeLabels } from "./contacts-tab";
 import {
 	DropdownMenu,
-	DropdownMenuTrigger,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
+import { contactTypeLabels } from "./contacts-tab";
 
 export default function ProfilePage({
 	profile,

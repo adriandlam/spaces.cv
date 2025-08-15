@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, CircleCheck, CircleX } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,7 +20,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { generalSchema } from "@/lib/validations/profile";
 import type { GeneralFormData } from "@/types/profile";
 import { UsernameField } from "./username-field";
-import { useDropzone } from "react-dropzone";
 
 interface GeneralTabProps {
 	onSubmit: (data: GeneralFormData) => Promise<void>;
