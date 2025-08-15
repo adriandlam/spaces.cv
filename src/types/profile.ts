@@ -26,7 +26,6 @@ export type ExperienceFormData = z.infer<typeof experienceFormSchema>;
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 
 export interface PublicProfile {
-  id: string;
   name: string;
   username: string; // Always has username for public profiles
   image: string | null;
@@ -45,7 +44,6 @@ export interface PublicProfile {
 }
 
 export interface ProfileModalData {
-  id: string;
   name: string;
   onboarded: boolean;
   username: string | null; // May be null during onboarding

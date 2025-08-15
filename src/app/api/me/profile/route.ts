@@ -30,7 +30,6 @@ export async function GET() {
         id: session.user.id,
       },
       select: {
-        id: true,
         name: true,
         username: true,
         onboarded: true,
@@ -177,6 +176,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Get updated user data
+    // TODO: remove id from user object
     const updatedSession = await auth.api.getSession({
       headers: await headers(),
     });

@@ -16,7 +16,7 @@ import { cn, fetcher } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
-import { GitHubIcon } from "./icons";
+import { ExternalArrow, GitHubIcon } from "./icons";
 import { useEffect } from "react";
 import { preload } from "swr";
 import {
@@ -113,7 +113,12 @@ export default function Nav() {
 								</Avatar>
 							</button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent>
+						<DropdownMenuContent
+							side="right"
+							sideOffset={5}
+							align="end"
+							alignOffset={20}
+						>
 							<DropdownMenuItem asChild>
 								<Link href="/settings">Settings</Link>
 							</DropdownMenuItem>
@@ -124,10 +129,14 @@ export default function Nav() {
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
-								<Link href="/terms">Terms of Service</Link>
+								<Link href="/terms" className="flex items-start !gap-1">
+									Terms of Service <ExternalArrow className="size-3.5" />
+								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
-								<Link href="/privacy">Privacy Policy</Link>
+								<Link href="/privacy" className="flex items-start !gap-1">
+									Privacy Policy <ExternalArrow className="size-3.5" />
+								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem

@@ -12,13 +12,16 @@ import {
 	CommandList,
 	CommandShortcut,
 } from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn, debounce } from "@/lib/utils";
 import type { PublicProfile } from "@/types/profile";
+
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, CornerDownLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, CornerDownLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import normalizeUrl from "normalize-url";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import useSWR from "swr";
@@ -37,6 +40,11 @@ export default function SearchModal() {
 	const [searchResults, setSearchResults] = useState<PublicProfile[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [currentSuggestion, setCurrentSuggestion] = useState(SUGGESTIONS[0]);
+	const [selectedValue, setSelectedValue] = useState("");
+	const [expandedProfile, setExpandedProfile] = useState<PublicProfile | null>(
+		null,
+	);
+
 	const page = pages[pages.length - 1];
 
 	const router = useRouter();
@@ -65,11 +73,16 @@ export default function SearchModal() {
 	);
 
 	useHotkeys(
-		"backspace",
+		"backspace, left",
 		() => {
 			if (searchQuery.length === 0) {
 				if (pages.length > 0) {
-					setPages((pages) => pages.slice(0, -1));
+					const newPages = pages.slice(0, -1);
+					setPages(newPages);
+					// Clear expanded profile when navigating away from expand-profile page
+					if (page === "expand-profile") {
+						setExpandedProfile(null);
+					}
 				} else {
 					setAiMode(false);
 				}
@@ -108,6 +121,46 @@ export default function SearchModal() {
 		},
 	);
 
+	useHotkeys(
+		"right",
+		() => {
+			if (page === "expand-profile") {
+				return;
+			}
+
+			// Find the selected profile by value
+			const allProfiles = searchQuery.trim() ? searchResults : profilesData;
+			const selectedProfile = allProfiles.find(
+				(p) => p.username === selectedValue,
+			);
+			if (selectedProfile) {
+				setExpandedProfile(selectedProfile);
+				setPages((pages) => [...pages, "expand-profile"]);
+			}
+		},
+		{
+			preventDefault: true,
+			enableOnFormTags: true,
+		},
+	);
+
+	// useHotkeys(
+	// 	"meta+enter, ctrl+enter",
+	// 	() => {
+	// 		// Get currently selected profile from search results
+	// 		const allProfiles = searchQuery.trim() ? searchResults : profilesData;
+	// 		if (allProfiles[selectedIndex]) {
+	// 			handleProfileSelect(allProfiles[selectedIndex].username, {
+	// 				metaKey: true,
+	// 			} as KeyboardEvent);
+	// 		}
+	// 	},
+	// 	{
+	// 		preventDefault: true,
+	// 		enableOnFormTags: true,
+	// 	},
+	// );
+
 	const profilesData = data?.users || [];
 
 	// Debounced search function
@@ -144,6 +197,19 @@ export default function SearchModal() {
 			setSearchResults([]);
 		}
 	}, [searchQuery, debouncedSearch]);
+
+	// Auto-select first item when results change (but not when on a page)
+	useEffect(() => {
+		if (!page) {
+			// Only auto-select when not on a sub-page
+			const allProfiles = searchQuery.trim() ? searchResults : profilesData;
+			if (allProfiles.length > 0) {
+				setSelectedValue(allProfiles[0].username);
+			} else {
+				setSelectedValue("");
+			}
+		}
+	}, [searchResults, profilesData, searchQuery, page]);
 
 	// Clear search when switching modes
 	useEffect(() => {
@@ -217,7 +283,12 @@ export default function SearchModal() {
 			showCloseButton={false}
 			open={open}
 			onOpenChange={handleOpenChange}
-			className={cn("!max-w-screen-xs", aiMode && "!max-w-screen-sm")}
+			className={cn(
+				"!max-w-screen-xs focus-visible:outline-none",
+				(aiMode || page === "expand-profile") && "!max-w-screen-sm",
+			)}
+			value={selectedValue}
+			onValueChange={setSelectedValue}
 		>
 			<div className="relative">
 				<AnimatePresence>
@@ -263,6 +334,8 @@ export default function SearchModal() {
 					}}
 					className={cn(aiMode && "!pl-6")}
 					hideIcon={aiMode}
+					loading={isSearching}
+					disabled={page === "expand-profile"}
 				/>
 				<AnimatePresence>
 					{!aiMode && (
@@ -292,6 +365,7 @@ export default function SearchModal() {
 					searchResults.length === 0 && (
 						<CommandEmpty>No results found for "{searchQuery}"</CommandEmpty>
 					)}
+
 				{/* {aiMode && !isSearching && !searchQuery.trim() && (
 					<CommandGroup heading="Try asking for...">
 						<div className="flex items-center gap-2">
@@ -333,7 +407,8 @@ export default function SearchModal() {
 						<CommandGroup heading={`Search results (${searchResults.length})`}>
 							{searchResults.map((profile) => (
 								<CommandItem
-									key={profile.id}
+									key={profile.username}
+									value={profile.username}
 									asChild
 									className="group !pr-3 hover:cursor-pointer"
 								>
@@ -344,25 +419,30 @@ export default function SearchModal() {
 										}}
 										className="flex justify-between"
 									>
-										<div className="flex items-center gap-2">
+										<div className="flex items-center gap-2 flex-1">
 											<Avatar className="size-9">
 												{profile.image && (
 													<AvatarImage src={profile.image} alt={profile.name} />
 												)}
-												<AvatarFallback className="tracking-wider uppercase">
+												<AvatarFallback className="tracking-wider uppercase text-sm">
 													{profile?.name
 														.split(" ")
 														.map((name) => name.charAt(0))}
 												</AvatarFallback>
 											</Avatar>
-											<div className="flex flex-col leading-4">
+											<div className="flex flex-col leading-4 flex-1 min-w-0">
 												<span>{profile.name}</span>
 												<p className="text-xs text-muted-foreground">
 													@{profile.username}
 												</p>
+												{/* {profile.customStatus && (
+													<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+														{profile.customStatus}
+													</p>
+												)} */}
 											</div>
 										</div>
-										<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+										<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out shrink-0 ml-2">
 											<span>Visit</span>
 											<ExternalArrow className="!size-3 !text-foreground" />
 										</div>
@@ -389,8 +469,12 @@ export default function SearchModal() {
 							<CommandGroup heading="Recently joined">
 								{profilesData.map((profile) => (
 									<CommandItem
-										key={profile.id}
+										key={profile.username}
+										value={profile.username}
 										asChild
+										onSelect={() => {
+											router.push(`/${profile.username}`);
+										}}
 										className="group !pr-3 hover:cursor-pointer"
 									>
 										<Link
@@ -401,7 +485,7 @@ export default function SearchModal() {
 											}}
 											className="flex justify-between"
 										>
-											<div className="flex items-center gap-2">
+											<div className="flex items-center gap-2 flex-1">
 												<Avatar className="size-9">
 													{profile.image && (
 														<AvatarImage
@@ -425,6 +509,9 @@ export default function SearchModal() {
 											<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
 												<span>Visit</span>
 												<ExternalArrow className="!size-3 !text-foreground" />
+											</div>
+											<div className="flex group-hover:opacity-100 group-data-[selected=true]:opacity-100 opacity-0 gap-0.5 text-xs transition duration-100 ease-out">
+												<ChevronRight />
 											</div>
 										</Link>
 									</CommandItem>
@@ -514,6 +601,85 @@ export default function SearchModal() {
 						</CommandItem>
 					</CommandGroup>
 				)}
+				{page === "expand-profile" && expandedProfile && (
+					<CommandGroup heading={`@${expandedProfile.username}'s profile`}>
+						<div className="px-2 space-y-3.5">
+							<div className="flex items-center gap-2 mt-2.5 mb-2">
+								<Avatar className="size-12">
+									{expandedProfile.image && (
+										<AvatarImage
+											src={expandedProfile.image}
+											alt={expandedProfile.name}
+										/>
+									)}
+									<AvatarFallback className="tracking-wider uppercase">
+										{expandedProfile.name
+											.split(" ")
+											.map((name) => name.charAt(0))}
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex items-center justify-between flex-1">
+									<div>
+										<h3>{expandedProfile.name}</h3>
+										<p className="text-muted-foreground lowercase text-sm">
+											{expandedProfile.title} in {expandedProfile.location}
+										</p>
+									</div>
+									{expandedProfile?.website && (
+										<Link
+											target="_blank"
+											rel="noopener noreferrer"
+											href={normalizeUrl(expandedProfile?.website, {
+												forceHttps: true,
+											})}
+											className="inline-flex gap-0.5 text-sm opacity-50 hover:underline underline-offset-2 hover:opacity-100 duration-200 ease-out"
+										>
+											{normalizeUrl(expandedProfile?.website, {
+												stripWWW: true,
+												stripProtocol: true,
+											})}
+											<ExternalArrow className="size-3 mt-0.5" />
+										</Link>
+									)}
+								</div>
+							</div>
+							<div className="mt-4 space-y-2">
+								{expandedProfile.about && (
+									<div className="space-y-1">
+										<Label className="text-xs">About</Label>
+										<p className="text-sm line-clamp-2">
+											{expandedProfile.about}
+										</p>
+									</div>
+								)}
+							</div>
+							{/* <p className="text-muted-foreground lowercase">
+								{profile?.title} in {profile?.location}
+							</p> */}
+							{/* {profile?.website && (
+								<Link
+									target="_blank"
+									rel="noopener noreferrer"
+									href={normalizeUrl(profile?.website, { forceHttps: true })}
+									className="inline-flex gap-0.5 text-sm opacity-50 hover:underline underline-offset-2 hover:opacity-100 duration-200 ease-out"
+								>
+									{normalizeUrl(profile?.website, {
+										stripWWW: true,
+										stripProtocol: true,
+									})}
+									<ExternalArrow className="size-3 mt-0.5" />
+								</Link>
+							)} */}
+
+							{/* <CommandItem
+								onSelect={() => router.push(`/${expandedProfile.username}`)}
+								className="flex items-start gap-1"
+							>
+								View profile <ExternalArrow className="!size-3.5 mt-0.5" />
+							</CommandItem> */}
+						</div>
+					</CommandGroup>
+				)}
 			</CommandList>
 			<Separator />
 			<div className="flex justify-between p-1 items-center">
@@ -523,7 +689,9 @@ export default function SearchModal() {
 					className="text-muted-foreground flex items-center gap-1.5 text-xs hover:bg-accent px-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out"
 				>
 					<CommandShortcut>Esc</CommandShortcut>
-					<span className="leading-none">{aiMode ? "Exit" : "Close"}</span>
+					<span className="leading-none">
+						{aiMode || pages.length > 0 ? "Back" : "Close"}
+					</span>
 				</button>
 				<div className="flex items-center gap-1.5">
 					<button
@@ -533,10 +701,10 @@ export default function SearchModal() {
 						<CommandShortcut className="text-foreground">
 							<CornerDownLeft className="size-3" />
 						</CommandShortcut>
-						<span className="leading-none">Open</span>
+						<span className="leading-none">Visit</span>
 					</button>
-					<Separator orientation="vertical" className="!h-3" />
-					<button
+					{/* <Separator orientation="vertical" className="!h-3" /> */}
+					{/* <button
 						type="button"
 						className="flex items-center gap-1.5 text-xs text-muted-foreground hover:bg-accent px-2 py-1.5 rounded-sm h-7 transition-colors duration-200 ease-out"
 					>
@@ -544,7 +712,7 @@ export default function SearchModal() {
 							⌘ <CornerDownLeft className="size-3" />
 						</CommandShortcut>
 						<span className="leading-none">Open in new tab</span>
-					</button>
+					</button> */}
 				</div>
 			</div>
 		</CommandDialog>

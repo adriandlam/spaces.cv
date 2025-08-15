@@ -41,6 +41,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
+import { Textarea } from "../ui/textarea";
 
 export default function ProfilePage({
 	profile,
@@ -50,6 +51,7 @@ export default function ProfilePage({
 	session?: Session | null;
 }) {
 	const [showUsername, setShowUsername] = useState<boolean | null>(null);
+	const [statusOpen, setStatusOpen] = useState(false);
 
 	return (
 		<div
@@ -75,8 +77,8 @@ export default function ProfilePage({
 				exit={{ opacity: 0, y: 15, filter: "blur(10px)" }}
 				transition={{ duration: 0.2, ease: "easeOut" }}
 			>
-				<div className="flex items-center gap-4">
-					{session && session?.userId !== profile?.id && (
+				<div className="flex flex-col gap-6">
+					<div className="flex items-center gap-4">
 						<div className="relative">
 							<Avatar className={cn("size-20", !profile?.image && "border")}>
 								{profile?.image && (
@@ -86,77 +88,132 @@ export default function ProfilePage({
 									{profile?.name.split(" ").map((name) => name.charAt(0))}
 								</AvatarFallback>
 							</Avatar>
+
+							{/* {session?.userId !== profile?.id && (
+								<button
+									type="button"
+									className="absolute bottom-1 right-1 bg-muted rounded-full flex items-center justify-center p-0.5 hover:bg-accent hover:cursor-pointer duration-200 ease-out"
+									onClick={() => setStatusOpen(true)}
+								>
+									<SmilePlus className="size-5 opacity-50" />
+								</button>
+							)} */}
+						</div>
+						<div className="">
 							<button
 								type="button"
-								className="absolute bottom-1 right-1 bg-muted rounded-full flex items-center justify-center p-0.5 hover:bg-accent hover:cursor-pointer duration-200 ease-out"
+								className="cursor-default relative h-7 inline-flex border-none bg-transparent p-0 text-left"
+								onMouseEnter={() => setShowUsername(true)}
+								onMouseLeave={() => setShowUsername(false)}
 							>
-								<SmilePlus className="size-5 opacity-50" />
+								<AnimatePresence mode="wait">
+									{!showUsername ? (
+										<motion.h1
+											key="name"
+											initial={
+												showUsername === null
+													? false
+													: { opacity: 0, y: -10, filter: "blur(8px)" }
+											}
+											animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+											exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
+											transition={{ duration: 0.15, ease: "easeOut" }}
+											className="text-xl flex items-center"
+										>
+											{profile?.name}
+										</motion.h1>
+									) : (
+										<motion.p
+											key="username"
+											initial={
+												showUsername === null
+													? false
+													: { opacity: 0, y: 10, filter: "blur(8px)" }
+											}
+											animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+											exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+											transition={{ duration: 0.15, ease: "easeOut" }}
+											className="text-xl flex items-center"
+										>
+											@{profile?.username}
+										</motion.p>
+									)}
+								</AnimatePresence>
 							</button>
+							<p className="text-muted-foreground lowercase">
+								{profile?.title} in {profile?.location}
+							</p>
+							{profile?.website && (
+								<Link
+									target="_blank"
+									rel="noopener noreferrer"
+									href={normalizeUrl(profile?.website, { forceHttps: true })}
+									className="inline-flex gap-0.5 text-sm opacity-50 hover:underline underline-offset-2 hover:opacity-100 duration-200 ease-out"
+								>
+									{normalizeUrl(profile?.website, {
+										stripWWW: true,
+										stripProtocol: true,
+									})}
+									<ExternalArrow className="size-3 mt-0.5" />
+								</Link>
+							)}
 						</div>
-					)}
-					<div className="">
-						<button
-							type="button"
-							className="cursor-default relative h-7 inline-flex border-none bg-transparent p-0 text-left"
-							onMouseEnter={() => setShowUsername(true)}
-							onMouseLeave={() => setShowUsername(false)}
-						>
-							<AnimatePresence mode="wait">
-								{!showUsername ? (
-									<motion.h1
-										key="name"
-										initial={
-											showUsername === null
-												? false
-												: { opacity: 0, y: -10, filter: "blur(8px)" }
-										}
-										animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-										exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
-										transition={{ duration: 0.15, ease: "easeOut" }}
-										className="text-xl flex items-center"
-									>
-										{profile?.name}
-									</motion.h1>
-								) : (
-									<motion.p
-										key="username"
-										initial={
-											showUsername === null
-												? false
-												: { opacity: 0, y: 10, filter: "blur(8px)" }
-										}
-										animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-										exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-										transition={{ duration: 0.15, ease: "easeOut" }}
-										className="text-xl flex items-center"
-									>
-										@{profile?.username}
-									</motion.p>
-								)}
-							</AnimatePresence>
-						</button>
-						<p className="text-muted-foreground lowercase">
-							{profile?.title} in {profile?.location}
-						</p>
-						{profile?.website && (
-							<Link
-								target="_blank"
-								rel="noopener noreferrer"
-								href={normalizeUrl(profile?.website, { forceHttps: true })}
-								className="inline-flex gap-0.5 text-sm opacity-50 hover:underline underline-offset-2 hover:opacity-100 duration-200 ease-out"
-							>
-								{normalizeUrl(profile?.website, {
-									stripWWW: true,
-									stripProtocol: true,
-								})}
-								<ExternalArrow className="size-3 mt-0.5" />
-							</Link>
-						)}
 					</div>
+					{/* <AnimatePresence>
+						{statusOpen && (
+							<motion.div
+								className="space-y-2 overflow-hidden"
+								layout
+								initial={{
+									opacity: 0,
+									height: 0,
+									y: -10,
+									filter: "blur(8px)",
+								}}
+								animate={{
+									opacity: 1,
+									height: "auto",
+									y: 0,
+									filter: "blur(0px)",
+								}}
+								exit={{
+									opacity: 0,
+									height: 0,
+									y: -10,
+									filter: "blur(8px)",
+								}}
+								transition={{
+									duration: 0.3,
+									ease: "easeOut",
+									height: { duration: 0.25 },
+								}}
+							>
+								<Label className="text-xs">Custom Status</Label>
+								<Textarea
+									placeholder="What's on your mind?"
+									className="resize-none rounded-xl px-4 py-3.5 focus-visible:ring-0"
+									rows={3}
+								/>
+								<div className="flex items-center gap-2 justify-end">
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => setStatusOpen(false)}
+									>
+										Cancel
+									</Button>
+									<Button size="sm" className="rounded-full h-7">
+										Set
+									</Button>
+								</div>
+							</motion.div>
+						)}
+					</AnimatePresence> */}
 				</div>
 				{profile?.about && (
 					<motion.div
 						className="space-y-4"
+						layout
 						initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 						animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 						exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
@@ -182,6 +239,7 @@ export default function ProfilePage({
 						<motion.div
 							key={section}
 							className="space-y-4"
+							layout
 							initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
 							animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 							exit={{ opacity: 0, y: 10, filter: "blur(8px)" }}
@@ -278,8 +336,8 @@ function ProfileActions({
 	contactHref: string;
 }) {
 	return (
-		<div className="h-11 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-1.5 rounded-full shadow-lg z-10">
-			<Button size="sm" className="hover:cursor-pointer !px-4">
+		<div className="h-10 border border-input/25 fixed flex items-center gap-1 bottom-3 left-1/2 -translate-x-1/2 bg-accent/75 backdrop-blur-sm p-1 rounded-full shadow-lg z-10">
+			<Button size="sm" className="hover:cursor-pointer !px-4 shadow-xs">
 				<UserPlus />
 				Follow
 			</Button>

@@ -11,7 +11,6 @@ export async function getPublicProfile(
       username: username.toLowerCase(),
     },
     select: {
-      id: true,
       name: true,
       username: true,
       image: true,
@@ -71,7 +70,6 @@ export async function getProfileModalData(): Promise<ProfileModalData | null> {
         id: session.user.id,
       },
       select: {
-        id: true,
         name: true,
         username: true,
         email: true,

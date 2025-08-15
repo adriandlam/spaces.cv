@@ -1,7 +1,7 @@
 "use client";
 
 import { Command as CommandPrimitive } from "cmdk";
-import { SearchIcon } from "lucide-react";
+import { Loader, SearchIcon } from "lucide-react";
 import type * as React from "react";
 import {
 	Dialog,
@@ -11,6 +11,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 function Command({
 	className,
@@ -35,6 +36,8 @@ function CommandDialog({
 	className,
 	showCloseButton = true,
 	shouldFilter = true,
+	value,
+	onValueChange,
 	...props
 }: React.ComponentProps<typeof Dialog> & {
 	title?: string;
@@ -42,6 +45,8 @@ function CommandDialog({
 	className?: string;
 	showCloseButton?: boolean;
 	shouldFilter?: boolean;
+	value?: string;
+	onValueChange?: (value: string) => void;
 }) {
 	return (
 		<Dialog {...props}>
@@ -55,6 +60,8 @@ function CommandDialog({
 			>
 				<Command
 					shouldFilter={shouldFilter}
+					value={value}
+					onValueChange={onValueChange}
 					className="[&_[cmdk-group-heading]]:text-muted-foreground/75 **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:p-2 [&_[cmdk-item]]:rounded-lg [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
 				>
 					{children}
@@ -65,18 +72,42 @@ function CommandDialog({
 }
 
 function CommandInput({
+	loading,
 	className,
 	hideIcon = false,
 	...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
 	hideIcon?: boolean;
+	loading?: boolean;
 }) {
 	return (
 		<div
 			data-slot="command-input-wrapper"
 			className="flex h-9 items-center gap-2 border-b px-3"
 		>
-			{!hideIcon && <SearchIcon className="size-4 shrink-0 opacity-50" />}
+			<AnimatePresence mode="popLayout">
+				{loading ? (
+					<motion.div
+						key="loading"
+						initial={{ opacity: 0, filter: "blur(3px)" }}
+						animate={{ opacity: 1, filter: "blur(0px)" }}
+						exit={{ opacity: 0, filter: "blur(3px)" }}
+						transition={{ duration: 0.15, ease: "easeOut" }}
+					>
+						<Loader className="size-4 shrink-0 opacity-50 animate-spin" />
+					</motion.div>
+				) : (
+					<motion.div
+						key="search-icon"
+						initial={{ opacity: 0, filter: "blur(3px)" }}
+						animate={{ opacity: 1, filter: "blur(0px)" }}
+						exit={{ opacity: 0, filter: "blur(3px)" }}
+						transition={{ duration: 0.15, ease: "easeOut" }}
+					>
+						{!hideIcon && <SearchIcon className="size-4 shrink-0 opacity-50" />}
+					</motion.div>
+				)}
+			</AnimatePresence>
 			<CommandPrimitive.Input
 				data-slot="command-input"
 				className={cn(
